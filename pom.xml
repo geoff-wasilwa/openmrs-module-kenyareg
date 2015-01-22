@@ -35,6 +35,7 @@
 	
 	<properties>
 		<openMRSVersion>1.9.8</openMRSVersion>
+		<kenyacoreVersion>2.2</kenyacoreVersion>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 

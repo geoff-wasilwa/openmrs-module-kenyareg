@@ -62,7 +62,18 @@
 		</dependency>
 				
 		<!-- End OpenMRS core -->
-		
+
+		<!-- Begin OpenMRS modules -->
+
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>kenyacore-api</artifactId>
+			<version>${kenyacoreVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- End OpenMRS modules -->
+
 	</dependencies>
 	
 	<build>
