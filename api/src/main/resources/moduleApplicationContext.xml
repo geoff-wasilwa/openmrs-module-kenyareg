@@ -11,6 +11,6 @@
 		<constructor-arg value="Registry" />
 		<constructor-arg value="kenyareg/registryHome.page" />
 		<constructor-arg value="kenyareg:apps/registry.png" />
-		<constructor-arg value="1000" />
+		<constructor-arg value="50" />
 	</bean>
 </beans>
