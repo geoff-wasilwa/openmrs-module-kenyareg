@@ -10,18 +10,10 @@
 
 	<artifactId>kenyareg-omod</artifactId>
 	<packaging>jar</packaging>
-	<name>KenyaEMR Registry Module OMOD</name>
+	<name>Kenya Registry OMOD</name>
 	<description>OMOD project for KenyaEMRRegistry</description>
 
 	<dependencies>
-
-		<!-- 
-		Add other dependencies from parent's pom: 
-		<dependency> 
-			<groupId>org.other.library</groupId> 
-			<artifactId>library-name</artifactId> 
-		</dependency> 
-		-->
 
 		<!-- Begin OpenMRS core -->
 
@@ -71,6 +63,8 @@
 		<dependency>
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>uiframework-api</artifactId>
+			<version>${uiframeworkVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- End OpenMRS modules -->

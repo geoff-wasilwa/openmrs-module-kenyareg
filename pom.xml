@@ -6,7 +6,7 @@
 	<artifactId>kenyareg</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<name>KenyaEMR Registry Module</name>
+	<name>Kenya Registry</name>
 	<description>This modules enables KenyaEMR to access registry services from LPI/MPI</description>
 	<url>https://wiki.openmrs.org/display/docs/KenyaEMR+Registry+Module+Module</url>
 	
@@ -35,26 +35,14 @@
 	
 	<properties>
 		<openMRSVersion>1.9.8</openMRSVersion>
-		<kenyacoreVersion>2.2</kenyacoreVersion>
 		<uiframeworkVersion>3.2.2</uiframeworkVersion>
+		<kenyauiVersion>2.0.3-SNAPSHOT</kenyauiVersion>
+		<kenyacoreVersion>2.2</kenyacoreVersion>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<dependencyManagement>
 		<dependencies>
-		
-			<!--
-			Libraries to add as dependencies with compile or runtime scope:
-			Find matching dependencies in the maven central repository.
-			<dependency>
-				<groupId>org.other.library</groupId>
-				<artifactId>library-name</artifactId>
-				<version>library.version</version>
-				<scope>compile</scope>
-			</dependency>
-			-->
-			
-			
 
 			<!-- Begin OpenMRS core -->
 			
@@ -101,13 +89,6 @@
 			<!-- End OpenMRS core -->
 
 			<!-- Begin OpenMRS modules -->
-
-			<dependency>
-				<groupId>org.openmrs.module</groupId>
-				<artifactId>uiframework-api</artifactId>
-				<version>${uiframeworkVersion}</version>
-				<scope>provided</scope>
-			</dependency>
 
 			<!-- End OpenMRS modules -->
 

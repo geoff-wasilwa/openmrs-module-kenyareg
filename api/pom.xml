@@ -10,21 +10,10 @@
 
 	<artifactId>kenyareg-api</artifactId>
 	<packaging>jar</packaging>
-	<name>KenyaEMR Registry Module API</name>
+	<name>Kenya Registry API</name>
 	<description>API project for KenyaEMRRegistry</description>
 
 	<dependencies>
-	
-		<!-- 
-		Add other dependencies from parent's pom:
-		<dependency>
-			<groupId>org.other.library</groupId> 
-			<artifactId>library-name</artifactId>
-		</dependency> 
-		-->
-
-		
-		
 
 		<!-- Begin OpenMRS core -->
 		
