@@ -22,9 +22,10 @@
 	</organization>
 
 	<scm>
-		<connection>scm:svn:https://svn.openmrs.org/openmrs-modules/kenyareg/trunk/</connection>
-		<developerConnection>scm:svn:https://svn.openmrs.org/openmrs-modules/kenyareg/trunk/</developerConnection>
-		<url>https://svn.openmrs.org/openmrs-modules/kenyareg/trunk/</url>
+		<connection>scm:git:git@github.com:I-TECH/openmrs-module-kenyareg.git</connection>
+		<developerConnection>scm:git:git@github.com:I-TECH/openmrs-module-kenyareg.git</developerConnection>
+		<url>scm:git:git@github.com:I-TECH/openmrs-module-kenyareg.git</url>
+		<tag>HEAD</tag>
 	</scm>
 
 	<modules>
