@@ -36,6 +36,7 @@
 	<properties>
 		<openMRSVersion>1.9.8</openMRSVersion>
 		<kenyacoreVersion>2.2</kenyacoreVersion>
+		<uiframeworkVersion>3.2.2</uiframeworkVersion>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -98,6 +99,17 @@
 			</dependency>
 						
 			<!-- End OpenMRS core -->
+
+			<!-- Begin OpenMRS modules -->
+
+			<dependency>
+				<groupId>org.openmrs.module</groupId>
+				<artifactId>uiframework-api</artifactId>
+				<version>${uiframeworkVersion}</version>
+				<scope>provided</scope>
+			</dependency>
+
+			<!-- End OpenMRS modules -->
 
 		</dependencies>
 	</dependencyManagement>
