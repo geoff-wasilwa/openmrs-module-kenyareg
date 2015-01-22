@@ -15,6 +15,11 @@
 	<require_version>${openMRSVersion}</require_version>
 	<!-- / Module Properties -->
 
+	<!-- Required modules -->
+	<require_modules>
+		<require_module version="${kenyacoreVersion}">org.openmrs.module.kenyacore</require_module>
+	</require_modules>
+	<!-- Required modules -->
 	
 	<!-- Module Activator -->
 	<activator>${project.parent.groupId}.${project.parent.artifactId}.KenyaEMRRegistryActivator</activator>
