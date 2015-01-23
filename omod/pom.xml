@@ -67,6 +67,13 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>kenyaui-api</artifactId>
+			<version>${kenyauiVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- End OpenMRS modules -->
 
 	</dependencies>
