@@ -1,19 +1,25 @@
 <%
-    ui.decorateWith("kenyaemr", "standardPage", [ layout: "sidebar" ])
+    ui.decorateWith("kenyaemr", "standardPage", [layout: "sidebar"])
 
     def menuItems = [
-            [ label: "Back", iconProvider: "kenyaui", icon: "buttons/back.png", href: ui.pageLink("kenyareg", "registryHome") ]
+            [label: "Back", iconProvider: "kenyaui", icon: "buttons/back.png", href: ui.pageLink("kenyareg", "registryHome")]
     ]
 %>
 
 <div class="ke-page-sidebar">
-    ${ ui.includeFragment("kenyaui", "widget/panelMenu", [ heading: "Back", items: menuItems ]) }
+    ${ui.includeFragment("kenyaui", "widget/panelMenu", [heading: "Back", items: menuItems])}
 
-    ${ ui.includeFragment("kenyareg", "basicSearch", [heading: "Basic Search" ]) }
+    ${ui.includeFragment("kenyareg", "basicSearch")}
 </div>
 
 <div class="ke-page-content">
-    ${ ui.includeFragment("kenyareg", "multipleResults", [heading: "Results" ]) }
+    ${ui.includeFragment("kenyareg", "status")}
 
-    ${ ui.includeFragment("kenyareg", "individualResult", [heading: "Details" ]) }
+    ${ui.includeFragment("kenyareg", "multipleResults")}
+
+    ${ui.includeFragment("kenyareg", "individualResult")}
+
+    <div id="resultsi">
+
+    </div>
 </div>
