@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
   		    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 	<!-- ===================== Apps ===================== -->
 
 	<bean id="kenyareg.app.reg" factory-bean="kenyacore.appFactoryBean" factory-method="createInstance">
-		<constructor-arg value="kenyareg.registry" />
-		<constructor-arg value="Registry" />
-		<constructor-arg value="kenyareg/registryHome.page" />
-		<constructor-arg value="kenyareg:apps/registry.png" />
-		<constructor-arg value="50" />
+		<constructor-arg value="kenyareg.registry"/>
+		<constructor-arg value="Registry"/>
+		<constructor-arg value="kenyareg/registryHome.page"/>
+		<constructor-arg value="kenyareg:apps/registry.png"/>
+		<constructor-arg value="50"/>
 	</bean>
 </beans>
