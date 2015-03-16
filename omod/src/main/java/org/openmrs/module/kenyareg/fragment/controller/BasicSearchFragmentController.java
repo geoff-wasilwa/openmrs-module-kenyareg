@@ -15,6 +15,7 @@
 package org.openmrs.module.kenyareg.fragment.controller;
 
 import ke.go.moh.oec.Person;
+import org.go2itech.oecui.data.RequestResult;
 import org.go2itech.oecui.data.RequestResultPair;
 import org.go2itech.oecui.data.Server;
 import org.openmrs.Patient;
@@ -25,20 +26,31 @@ import org.openmrs.ui.framework.UiUtils;
 import org.openmrs.ui.framework.annotation.BindParams;
 import org.openmrs.ui.framework.annotation.MethodParam;
 import org.openmrs.ui.framework.annotation.SpringBean;
+import org.openmrs.ui.framework.session.Session;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.RequestParam;
 
 public class BasicSearchFragmentController {
 
-	public void controller() {
+	public void controller(Session session) {
+		session.setAttribute("lpiResult", null);
+		session.setAttribute("mpiResult", null);
 	}
 
 	public RequestResultPair search(@MethodParam("newBasicSearchForm") @BindParams BasicSearchForm form,
 	                                @SpringBean("registryService") RegistryService registryService,
-	                                UiUtils ui) {
+	                                Session session, UiUtils ui) {
 		ui.validate(form, form, null);
+
 		Person query = form.getPerson();
-		return registryService.findPerson(Server.MPI_LPI, query);
+        RequestResultPair resultPair = registryService.findPerson(Server.MPI_LPI, query);
+
+		session.setAttribute("lpiResult", resultPair.getLpiResult());
+		session.setAttribute("mpiResult", resultPair.getMpiResult());
+
+		RequestResult lpi = session.getAttribute("lpiResult", RequestResult.class);
+
+		return resultPair;
 	}
 
 
