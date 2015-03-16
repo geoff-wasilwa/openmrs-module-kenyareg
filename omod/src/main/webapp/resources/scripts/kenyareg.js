@@ -1,11 +1,24 @@
 jq(function () {
 
+	/**
+	 * Pre-fill basic search form with test data.
+	 */
 	jq('#surname').val("Okoth");
 	jq('#firstName').val("Nicodemus");
 
-
+	/**
+	 * The search result after sending a query to the MPI, LPI or both.
+	 */
 	var requestResult = null;
 
+	/**
+	 * The matching person selected by the user, if any.
+	 */
+	var selectedMatch = null;
+
+	/**
+	 * Sets up the basic search form to be submitted via AJAX.
+	 */
 	kenyaui.setupAjaxPost('basic-search-form', {
 		onSuccess: function (data) {
 			requestResult = data;
@@ -64,12 +77,12 @@ jq(function () {
 	}
 
 	function showDetails(i) {
-		var person = requestResult.lpiResult.data[i];
-		showMatchScore(person)
-		showIdentifierDetails(person);
-		showBasicDetails(person);
-		showStatusDetails(person);
-		showParentDetails(person);
+		selectedMatch = requestResult.lpiResult.data[i];
+		showMatchScore(selectedMatch)
+		showIdentifierDetails(selectedMatch);
+		showBasicDetails(selectedMatch);
+		showStatusDetails(selectedMatch);
+		showParentDetails(selectedMatch);
 	}
 
 	function showMatchScore(person) {
@@ -178,4 +191,30 @@ jq(function () {
 		}
 		return formatted;
 	}
+
+	function extractNupi(person) {
+		var nupi = null;
+		jq.each(selectedMatch.personIdentifierList, function (i, id) {
+			if (id.identifierType === 'kisumuHdssId') {
+				nupi = id.identifier;
+			}
+		});
+		return nupi;
+	}
+
+	jq('#accept-button').click(function () {
+		var nupi = extractNupi(selectedMatch);
+		jq.getJSON('/' + OPENMRS_CONTEXT_PATH + '/kenyareg/basicSearch/accept.action', {uuid: nupi})
+			.success(function (data) {
+				var patId = data;
+				if (patId) {
+					ui.navigate('kenyaemr', 'registration/registrationViewPatient', {patientId: patId});
+				} else {
+					alert('Patient not found in EMR.');
+				}
+			})
+			.error(function (xhr, status, err) {
+				alert(err);
+			})
+	})
 });
