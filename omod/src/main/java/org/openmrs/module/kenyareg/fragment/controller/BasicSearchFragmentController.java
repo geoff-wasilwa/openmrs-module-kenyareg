@@ -32,15 +32,37 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 public class BasicSearchFragmentController {
 
+	private void setDisplayAttributes(int server, Session session) {
+		switch (server) {
+			case Server.MPI_LPI:
+				session.setAttribute("lpiDisplayed", Boolean.FALSE);
+				session.setAttribute("mpiDisplayed", Boolean.FALSE);
+				break;
+			case Server.MPI:
+				session.setAttribute("mpiDisplayed", Boolean.FALSE);
+				break;
+			case Server.LPI:
+				session.setAttribute("lpiDisplayed", Boolean.FALSE);
+				break;
+		}
+	}
+
 	public void controller(Session session) {
 		session.setAttribute("lpiResult", null);
 		session.setAttribute("mpiResult", null);
+
+		session.setAttribute("lpiDisplayed", null);
+		session.setAttribute("mpiDisplayed", null);
+
+		session.setAttribute("lastResort", null);
 	}
 
 	public RequestResultPair search(@MethodParam("newBasicSearchForm") @BindParams BasicSearchForm form,
 	                                @SpringBean("registryService") RegistryService registryService,
 	                                Session session, UiUtils ui) {
 		ui.validate(form, form, null);
+
+		setDisplayAttributes(form.getServer(), session);
 
 		Person query = form.getPerson();
         RequestResultPair resultPair = registryService.findPerson(Server.MPI_LPI, query);
@@ -76,10 +98,19 @@ public class BasicSearchFragmentController {
 
 	public class BasicSearchForm extends ValidatingCommandObject {
 
+		private int server;
 		private String surname;
 		private String firstName;
 
 		public BasicSearchForm() {
+		}
+
+		public int getServer() {
+			return server;
+		}
+
+		public void setServer(int server) {
+			this.server = server;
 		}
 
 		public String getFirstName() {

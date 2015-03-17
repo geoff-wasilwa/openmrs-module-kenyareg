@@ -20,6 +20,12 @@
                                     class        : java.lang.String,
                                     id           : "firstName"
                             ]
+                    ],
+                    [
+                            [
+                                hiddenInputName: "server",
+                                value: 1
+                            ]
                     ]
             ]
 %>
