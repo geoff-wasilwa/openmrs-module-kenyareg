@@ -15,18 +15,32 @@
 package org.openmrs.module.kenyareg.api;
 
 import ke.go.moh.oec.Person;
+import ke.go.moh.oec.PersonIdentifier;
 import ke.go.moh.oec.PersonRequest;
 import ke.go.moh.oec.lib.Mediator;
 import org.go2itech.oecui.api.RequestDispatcher;
 import org.go2itech.oecui.data.RequestResult;
 import org.go2itech.oecui.data.RequestResultPair;
+import org.openmrs.Patient;
+import org.openmrs.PersonName;
+import org.openmrs.api.PatientService;
+import org.openmrs.api.PersonService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-/**
- * Created by gitahi on 16/03/15.
- */
+import java.util.List;
+
 @Service("registryService")
 public class RegistryServiceImpl implements RegistryService {
+
+	@Autowired
+	@Qualifier("patientService")
+	PatientService patientService;
+
+	@Autowired
+	@Qualifier("personService")
+	PersonService personService;
 
 	@Override
 	public RequestResultPair findPerson(int server, Person person) {
@@ -42,5 +56,52 @@ public class RegistryServiceImpl implements RegistryService {
 
 		RequestResultPair resultPair = new RequestResultPair(lpiResult, mpiResult);
 		return resultPair;
+	}
+
+	@Override
+	public Patient acceptPerson(Person fromMpi) {
+		org.openmrs.Person fromOmrs = personService.getPersonByUuid(fromMpi.getPersonGuid());
+		org.openmrs.Person merged = mergePerson(fromOmrs, fromMpi);
+		Patient patient;
+		if (merged.isPatient()) {
+			patient = (Patient) merged;
+		} else {
+			patient = new Patient(merged);
+		}
+		mergePersonIdentifiers(fromOmrs, fromMpi);
+		return patientService.savePatient(patient);
+	}
+
+	private org.openmrs.Person mergePerson(org.openmrs.Person fromOmrs, Person fromMpi) {
+		if (fromOmrs == null) {
+			fromOmrs = new org.openmrs.Person();
+			fromOmrs.setUuid(fromMpi.getPersonGuid());
+		}
+		fromOmrs.setGender(fromMpi.getSex() == null ? "M" : fromMpi.getSex().toString());
+		fromOmrs.setBirthdate(fromMpi.getBirthdate());
+		fromOmrs.setDeathDate(fromMpi.getDeathdate());
+
+		PersonName personName = fromOmrs.getPersonName();
+		if (personName == null) {
+			personName = new PersonName();
+			personName.setPerson(fromOmrs);
+		}
+		personName.setGivenName(fromMpi.getFirstName());
+		personName.setMiddleName(fromMpi.getMiddleName());
+		personName.setFamilyName(fromMpi.getLastName());
+		fromOmrs.addName(personName);
+
+		return fromOmrs;
+	}
+
+	private org.openmrs.Person mergePersonIdentifiers(org.openmrs.Person fromOmrs, Person fromMpi) {
+		Patient patient = (Patient) fromOmrs;
+		List<PersonIdentifier> mpiIds = fromMpi.getPersonIdentifierList();
+		for (PersonIdentifier mpiId : mpiIds) {
+			if (mpiId.getIdentifierType().toString().equalsIgnoreCase("")) {
+				//assign patient ids here
+			}
+		}
+		return fromOmrs;
 	}
 }

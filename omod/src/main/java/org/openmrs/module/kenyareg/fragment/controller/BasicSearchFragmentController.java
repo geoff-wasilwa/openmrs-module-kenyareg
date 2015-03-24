@@ -18,8 +18,6 @@ import ke.go.moh.oec.Person;
 import org.go2itech.oecui.data.RequestResult;
 import org.go2itech.oecui.data.RequestResultPair;
 import org.go2itech.oecui.data.Server;
-import org.openmrs.Patient;
-import org.openmrs.api.PatientService;
 import org.openmrs.module.kenyareg.api.RegistryService;
 import org.openmrs.module.kenyaui.form.ValidatingCommandObject;
 import org.openmrs.ui.framework.UiUtils;
@@ -29,6 +27,8 @@ import org.openmrs.ui.framework.annotation.SpringBean;
 import org.openmrs.ui.framework.session.Session;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 public class BasicSearchFragmentController {
 
@@ -77,19 +77,20 @@ public class BasicSearchFragmentController {
 
 
 	public Integer accept(@RequestParam(value = "uuid", required = true) String uuid,
-	                      @SpringBean("patientService") PatientService patientService) {
-		Patient patient = patientService.getPatientByUuid(uuid);
-		if (patient == null) {
+	                      @SpringBean("registryService") RegistryService registryService,
+	                      Session session) {
+		Person fromMpi = null;
+		List<Person> personList = (List<Person>) session.getAttribute("lpiResult", RequestResult.class).getData();
+		for (Person person : personList) {
+			if (person.getPersonGuid().equals(uuid)) {
+				fromMpi = person;
+				break;
+			}
+		}
+		if (fromMpi == null) {
 			return null;
 		}
-		/**
-		 * This method should receive the match being accepted. It should then use the
-		 * NUPI in there to:
-		 *
-		 * 1. Create or update a patient record
-		 * 2. Redirect to the patient dashboard for that record
-		 */
-		return patient.getId();
+		return registryService.acceptPerson(fromMpi).getId();
 	}
 
 	public BasicSearchForm newBasicSearchForm() {

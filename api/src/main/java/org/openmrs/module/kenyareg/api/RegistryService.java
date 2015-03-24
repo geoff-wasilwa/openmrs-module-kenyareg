@@ -16,11 +16,11 @@ package org.openmrs.module.kenyareg.api;
 
 import ke.go.moh.oec.Person;
 import org.go2itech.oecui.data.RequestResultPair;
+import org.openmrs.Patient;
 
-/**
- * Created by gitahi on 16/03/15.
- */
 public interface RegistryService {
 
 	public RequestResultPair findPerson(int server, Person person);
+
+	public Patient acceptPerson(Person fromMpi);
 }
