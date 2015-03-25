@@ -194,11 +194,16 @@ jq(function () {
 
 	function extractNupi(person) {
 		var nupi = null;
-		jq.each(selectedMatch.personIdentifierList, function (i, id) {
-			if (id.identifierType === 'kisumuHdssId') {
-				nupi = id.identifier;
-			}
-		});
+		if (selectedMatch.personIdentifierList) {
+			jq.each(selectedMatch.personIdentifierList, function (i, id) {
+				if (id.identifierType === 'kisumuHdssId') {
+					nupi = id.identifier;
+				}
+			});
+		}
+		if (!nupi) {
+			nupi = selectedMatch.personGuid;
+		}
 		return nupi;
 	}
 
