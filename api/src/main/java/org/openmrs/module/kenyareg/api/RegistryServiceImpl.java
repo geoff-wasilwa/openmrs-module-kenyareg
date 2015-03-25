@@ -34,11 +34,11 @@ import java.util.List;
 @Service("registryService")
 public class RegistryServiceImpl implements RegistryService {
 
-	@Autowired
+	@Autowired(required = true)
 	@Qualifier("patientService")
 	PatientService patientService;
 
-	@Autowired
+	@Autowired(required = true)
 	@Qualifier("personService")
 	PersonService personService;
 
@@ -95,11 +95,12 @@ public class RegistryServiceImpl implements RegistryService {
 	}
 
 	private org.openmrs.Person mergePersonIdentifiers(org.openmrs.Person fromOmrs, Person fromMpi) {
-		Patient patient = (Patient) fromOmrs;
 		List<PersonIdentifier> mpiIds = fromMpi.getPersonIdentifierList();
-		for (PersonIdentifier mpiId : mpiIds) {
-			if (mpiId.getIdentifierType().toString().equalsIgnoreCase("")) {
-				//assign patient ids here
+		if (mpiIds != null) {
+			for (PersonIdentifier mpiId : mpiIds) {
+				if (mpiId.getIdentifierType().toString().equalsIgnoreCase("")) {
+					//assign patient ids here
+				}
 			}
 		}
 		return fromOmrs;
