@@ -25,6 +25,7 @@ import org.openmrs.Patient;
 import org.openmrs.PersonName;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.PersonService;
+import org.openmrs.api.impl.BaseOpenmrsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service("registryService")
-public class RegistryServiceImpl implements RegistryService {
+public class RegistryServiceImpl extends BaseOpenmrsService implements RegistryService {
 
 	@Autowired(required = true)
 	@Qualifier("patientService")

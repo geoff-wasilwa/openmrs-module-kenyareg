@@ -3,8 +3,8 @@ jq(function () {
 	/**
 	 * Pre-fill basic search form with test data.
 	 */
-	jq('#surname').val("Okoth");
-	jq('#firstName').val("Nicodemus");
+	jq('#surname').val("Kamau");
+	jq('#firstName').val("Rose");
 
 	/**
 	 * The search result after sending a query to the MPI, LPI or both.
@@ -208,18 +208,27 @@ jq(function () {
 	}
 
 	jq('#accept-button').click(function () {
-		var nupi = extractNupi(selectedMatch);
-		jq.getJSON('/' + OPENMRS_CONTEXT_PATH + '/kenyareg/basicSearch/accept.action', {uuid: nupi})
-			.success(function (data) {
-				var patId = data;
-				if (patId) {
-					ui.navigate('kenyaemr', 'registration/registrationViewPatient', {patientId: patId});
-				} else {
-					alert('Patient not found in EMR.');
-				}
-			})
-			.error(function (xhr, status, err) {
-				alert(err);
-			})
+		ui.navigate('kenyareg', 'basicHome2', {patientId: 1});
 	})
+
+	/**
+	 * This is the original implementation. It directly extracts the NUPI uses it to retrieve the patient from
+	 * KenyaEMR
+	 */
+
+	//jq('#accept-button').click(function () {
+	//	var nupi = extractNupi(selectedMatch);
+	//	jq.getJSON('/' + OPENMRS_CONTEXT_PATH + '/kenyareg/basicSearch/accept.action', {uuid: nupi})
+	//		.success(function (data) {
+	//			var patId = data;
+	//			if (patId) {
+	//				ui.navigate('kenyaemr', 'registration/registrationViewPatient', {patientId: patId});
+	//			} else {
+	//				alert('Patient not found in EMR.');
+	//			}
+	//		})
+	//		.error(function (xhr, status, err) {
+	//			alert(err);
+	//		})
+	//})
 });
