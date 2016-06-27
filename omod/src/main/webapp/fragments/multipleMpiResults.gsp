@@ -1,13 +1,13 @@
 <link rel="stylesheet" type="text/css" href="../resources/styles/kenyareg.css">
 
 <%
-    ui.decorateWith("kenyaui", "panel", [heading: "LPI Results"])
+    ui.decorateWith("kenyaui", "panel", [heading: "MPI Results"])
 
     ui.includeCss("kenyareg", "kenyareg.css")
 %>
 
 <div id="results2">
-    <table id="lpi-results-table" class="results-table">
+    <table id="mpi-results-table" class="results-table">
         <thead>
         <tr>
             <th>Match Score</th>
