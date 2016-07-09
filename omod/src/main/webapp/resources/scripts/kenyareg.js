@@ -32,13 +32,17 @@ jq(function () {
 			} else {
 				if (!data.lpiResult.successful && data.mpiResult.successful) {
 					jq('#status').html("The LPI could not be contacted. Retry?");
+					showResultBySource('mpi');
+					showDetails(0, 'mpi')
 				} else if (data.lpiResult.successful && !data.mpiResult.successful) {
 					jq('#status').html("The MPI could not be contacted. Retry?");
+					showResultBySource('lpi');
+					showDetails(0, 'lpi');
 				} else {
 					jq('#status').html("Both the LPI and the MPI were contacted. render results.");
 					showResults();
-					showDetails(0, 'lpi')
-					showDetails(0, 'mpi')
+					showDetails(0, 'lpi');
+					showDetails(0, 'mpi');
 				}
 			}
 		}
@@ -254,7 +258,7 @@ jq(function () {
 	}
 
 	jq('#accept-button').click(function () {
-		ui.navigate('kenyareg', 'merge', {lpiMatch: lpiMatch, mpiMatch: mpiMatch});
+		ui.navigate('kenyareg', 'merge', {lpiUid: lpiMatch.personGuid, mpiUid: mpiMatch.personGuid});
 	})
 
 	/**
