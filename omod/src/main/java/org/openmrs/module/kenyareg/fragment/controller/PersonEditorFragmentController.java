@@ -1,14 +1,20 @@
 package org.openmrs.module.kenyareg.fragment.controller;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.go2itech.oecui.data.RequestResult;
 import org.openmrs.module.kenyareg.api.PersonMergeService;
+import org.openmrs.module.kenyareg.api.RegistryService;
+import org.openmrs.ui.framework.UiUtils;
+import org.openmrs.ui.framework.annotation.BindParams;
 import org.openmrs.ui.framework.annotation.SpringBean;
+import org.openmrs.ui.framework.fragment.FragmentActionRequest;
 import org.openmrs.ui.framework.fragment.FragmentConfiguration;
 import org.openmrs.ui.framework.fragment.FragmentModel;
+import org.openmrs.ui.framework.fragment.action.FailureResult;
+import org.openmrs.ui.framework.fragment.action.FragmentActionResult;
+import org.openmrs.ui.framework.fragment.action.SuccessResult;
 import org.openmrs.ui.framework.session.Session;
 
 import ke.go.moh.oec.Person;
@@ -46,26 +52,39 @@ public class PersonEditorFragmentController {
 				}
 			}
 		}
-		Map<String, Object> mergedProperties = new HashMap<String, Object>();
-		Map<String, Map<String, Object>> conflicts = new HashMap<String, Map<String,Object>>();
-		String[] properties = new String[]
-			{
-				"lastName", "firstName", "middleName", "otherName",
-				"clanName", "sex", "birthdate", "mothersFirstName",
-				"mothersMiddleName", "mothersLastName", "fathersFirstName",
-				"fathersMiddleName", "fathersLastName",
-				"villageName", "maritalStatus"
-			};
-
-		mergeService.mergeLpiMpiPersonProperties(mergedProperties, conflicts, fromLpi, fromMpi, properties);
-
-		model.addAttribute("mergedProperties", mergedProperties);
-		model.addAttribute("conflictedProperties", conflicts);
+		session.setAttribute("lpiMatch", fromLpi);
+		session.setAttribute("mpiMatch", fromMpi);
+		model.addAttribute("mergedProperties", mergeService.getLpiMpiMergedProperties(fromLpi, fromMpi));
+		model.addAttribute("conflictedProperties", mergeService.getLpiMpiConflictingProperties(fromLpi, fromMpi));
 
 	}
 
-	public void update() {
+	public FragmentActionResult update(
+			@SpringBean("personMergeService") PersonMergeService mergeService,
+			@SpringBean("registryService") RegistryService registryService,
+			@BindParams Person person, FragmentActionRequest request,
+			Session session, UiUtils ui) {
+		Person lpiMatch = session.getAttribute("lpiMatch", Person.class);
+		Person mpiMatch = session.getAttribute("mpiMatch", Person.class);
+		Map<String, Map<String, Object>> conflictingProperties = mergeService.getLpiMpiConflictingProperties(lpiMatch, mpiMatch);
+		for (Map.Entry<String, Map<String, Object>> entry : conflictingProperties.entrySet()) {
+			String propertyName = entry.getKey();
+			boolean found = true;
+			for (Map.Entry<String, Object> valueEntry : entry.getValue().entrySet()) {
+				String requestParameterName = "conflict-" + valueEntry.getKey() + "-" + propertyName;
+				Object value = request.getAttribute(requestParameterName);
+				found = found && (value != null);
+			}
+			if (found) {
+				request.globalError("Please resolve " + propertyName + " conflict");
+			}
+		}
 
+		if (request.hasErrors()) {
+			return new FailureResult(request.getErrors());
+		}
+		registryService.acceptPerson(person);
+		return new SuccessResult("Person details uptdated");
 	}
 
 	public void pollPersonIndex(Session session) {

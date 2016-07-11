@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -105,40 +104,37 @@ public class PersonMergeServiceTest {
 		Assert.assertThat(omrsPerson.getPersonName().getFamilyName(), Matchers.is(mpiPerson.getLastName()));
 	}
 
-	@Test public void lpiMpiMergePersonProperties_shouldPreferNonEmptyProperties() {
+	@Test public void getLpiMpiMergedProperties_shouldPreferNonEmptyProperties() {
 		Person lpiPerson = new Person();
 		lpiPerson.setFirstName("FirstName");
 		Date birthDate = new Date();
 		lpiPerson.setBirthdate(birthDate);
 		Person mpiPerson = new Person();
-		Map<String, Object> mergedProperties = new HashMap<String, Object>();
-		Map<String, Map<String, Object>> conflictedProperties = new HashMap<String, Map<String,Object>>();
-		String[] properties = new String[] { "firstName", "birthdate" };
-		mergeService.mergeLpiMpiPersonProperties(mergedProperties, conflictedProperties, lpiPerson, mpiPerson, properties);
+		Map<String, Object> mergedProperties = mergeService.getLpiMpiMergedProperties(lpiPerson, mpiPerson);
 
 		Assert.assertThat(mergedProperties.size(), Matchers.is(2));
 		Assert.assertThat(mergedProperties.get("firstName").toString(), Matchers.equalTo("FirstName"));
 		Assert.assertThat((Date)mergedProperties.get("birthdate"), Matchers.equalTo(birthDate));
 	}
 
-	@Test public void lpiMpiMergePersonProperties_shouldConflictWhenPropertyValuesDoNotMatch() {
+	@Test public void getLpiMpiConflictingProperties_shouldConflictWhenPropertyValuesDoNotMatch() {
 		Person lpiPerson = new Person();
 		lpiPerson.setFirstName("FirstName");
 		lpiPerson.setSex(Sex.F);
 		Person mpiPerson = new Person();
 		mpiPerson.setFirstName("Conflicting");
 		mpiPerson.setSex(Sex.M);
-		Map<String, Object> mergedProperties = new HashMap<String, Object>();
-		Map<String, Map<String, Object>> conflictedProperties = new HashMap<String, Map<String, Object>>();
-		String[] properties = new String[] { "firstName", "sex" };
-		mergeService.mergeLpiMpiPersonProperties(mergedProperties, conflictedProperties, lpiPerson, mpiPerson, properties);
+		Map<String, Map<String, Object>> conflictedProperties = mergeService.getLpiMpiConflictingProperties(lpiPerson, mpiPerson);
 
-		Assert.assertThat(mergedProperties.size(), Matchers.is(0));
 		Assert.assertThat(conflictedProperties.size(), Matchers.is(2));
 		Assert.assertThat(conflictedProperties.get("firstName").get("lpi").toString(), Matchers.equalTo("FirstName"));
 		Assert.assertThat(conflictedProperties.get("firstName").get("mpi").toString(), Matchers.equalTo("Conflicting"));
 		Assert.assertThat(conflictedProperties.get("sex").get("lpi").toString(), Matchers.equalTo("F"));
 		Assert.assertThat(conflictedProperties.get("sex").get("mpi").toString(), Matchers.equalTo("M"));
+	}
+
+	@Test public void getLpiMpiConflictingProperties_shouldReturnEmptyCollectionIfBothLpiAndMpiAreNull() {
+		Assert.assertThat(mergeService.getLpiMpiConflictingProperties(null, null).size(), Matchers.is(0));
 	}
 
 	private List<PatientIdentifierType> getMockListOfIdentifiers() {

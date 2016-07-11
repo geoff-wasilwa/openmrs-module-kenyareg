@@ -22,27 +22,34 @@ jq(function () {
 	var mpiMatch = null;
 
 	/**
+	 * Indicates whether the person index should be contacted
+	 */
+	var skipPersonIndex = false;
+
+	/**
 	 * Sets up the basic search form to be submitted via AJAX.
 	 */
 	kenyaui.setupAjaxPost('basic-search-form', {
 		onSuccess: function (data) {
 			requestResult = data;
 			if (!data.lpiResult.successful && !data.mpiResult.successful) {
-				jq('#status').html("Neither the LPI nor the MPI could be contacted. Retry?");
+				kenyaui.openConfirmDialog(
+					{
+						"message": "Neither the LPI nor the MPI could be contacted. Retry?",
+						"okLabel": "Yes",
+						"cancelLabel": "No",
+						"okCallback": function(){
+							jq("#basic-search-form").submit();
+						}
+					}
+				);
 			} else {
-				if (!data.lpiResult.successful && data.mpiResult.successful) {
-					jq('#status').html("The LPI could not be contacted. Retry?");
+				if (data.lpiResult.successful) {
 					showResultBySource('mpi');
 					showDetails(0, 'mpi')
-				} else if (data.lpiResult.successful && !data.mpiResult.successful) {
-					jq('#status').html("The MPI could not be contacted. Retry?");
+				} else if (data.mpiResult.successful) {
 					showResultBySource('lpi');
 					showDetails(0, 'lpi');
-				} else {
-					jq('#status').html("Both the LPI and the MPI were contacted. render results.");
-					showResults();
-					showDetails(0, 'lpi');
-					showDetails(0, 'mpi');
 				}
 			}
 		}
@@ -63,17 +70,15 @@ jq(function () {
 
 	function showResultBySource(source) {
 		var list;
-		var id;
+		jq("div.results .ke-panel-heading").html(source.toUpperCase() + " Results")
 		if (source == 'lpi') {
 			list = requestResult.lpiResult;
-			id = '#lpi-results-table';
 		} else if (source == 'mpi') {
 			list = requestResult.mpiResult;
-			id = '#mpi-results-table';
 		}
-		jq(id + ' > tbody').html("");
+		jq('#person-index-results-table > tbody').html("");
 		if (list.data.length == 0) {
-			showEmpty(source);
+			showEmpty();
 		} else {
 			for (var i = 0; i < list.data.length; i++) {
 				showPerson(i, source);
@@ -81,27 +86,21 @@ jq(function () {
 		}
 	}
 
-	function showEmpty(source) {
-		var id;
-		if (source == 'lpi') {
-			id = '#lpi-results-table';
-		} else if (source == 'mpi') {
-			id = '#mpi-results-table';
-		}
-		jq(id).append('<tr>' +
-		'<td colspan="6">Nothing to show</td>' +
-		'</tr>');
+	function showEmpty() {
+		var id = '#person-index-results-table';
+		jq(id).append(
+			'<tr>' +
+				'<td colspan="6">Nothing to show</td>' +
+			'</tr>');
 	}
 
 	function showPerson(i, source) {
 		var person;
-		var id;
+		var id = '#person-index-results-table';
 		if (source == 'lpi') {
 			person = requestResult.lpiResult.data[i];
-			id = '#lpi-results-table';
 		} else if (source == 'mpi') {
 			person = requestResult.mpiResult.data[i];
-			id = '#mpi-results-table';
 		}
 		jq(id).append('<tr>' +
 		'<td>' + replaceNull(person.matchScore) + '</td>' +
@@ -126,20 +125,19 @@ jq(function () {
 			mpiMatch = requestResult.mpiResult.data[i];
 			selected = mpiMatch;
 		}
-		showMatchScore(selected, source)
-		showIdentifierDetails(selected, source);
-		showBasicDetails(selected, source);
-		showStatusDetails(selected, source);
-		showParentDetails(selected, source);
+		showMatchScore(selected)
+		showIdentifierDetails(selected);
+		showBasicDetails(selected);
+		showStatusDetails(selected);
+		showParentDetails(selected);
 	}
 
 	function showMatchScore(person, source) {
-		jq('#' + source + '-score').html(replaceNull(person.matchScore));
+		jq('#score').html(replaceNull(person.matchScore));
 	}
 
-	function showIdentifierDetails(person, source) {
-		var id = '#' + source + '-id-table';
-		jq(id + ' > tbody').html("");
+	function showIdentifierDetails(person) {
+		jq('#identifier-table > tbody').html("");
 		var personIdList = person.personIdentifierList;
 		if (personIdList) {
 			for (var j = 0; j < personIdList.length; j++) {
@@ -150,31 +148,31 @@ jq(function () {
 				'</tr>');
 			}
 		} else {
-			jq(id).append('<tr><td></td></tr>');
+			jq('#identifier-table').append('<tr><td></td></tr>');
 		}
 	}
 
-	function showBasicDetails(person, source) {
-		jq('#' + source + '-first-name').html(replaceNull(person.firstName));
-		jq('#' + source + '-middle-name').html(replaceNull(person.middleName));
-		jq('#' + source + '-last-name').html(replaceNull(person.lastName));
-		jq('#' + source + '-birth-date').html(replaceNull(formatDate(person.birthdate)));
-		jq('#' + source + '-sex').html(replaceNull(person.sex));
+	function showBasicDetails(person) {
+		jq('#first-name').html(replaceNull(person.firstName));
+		jq('#middle-name').html(replaceNull(person.middleName));
+		jq('#last-name').html(replaceNull(person.lastName));
+		jq('#birth-date').html(replaceNull(formatDate(person.birthdate)));
+		jq('#sex').html(replaceNull(person.sex));
 	}
 
-	function showStatusDetails(person, source) {
-		jq('#' + source + '-alive-status').html(replaceNull(person.aliveStatus));
-		jq('#' + source + 'marital-status').html(replaceNull(formatMaritalStatus(person.maritalStatus)));
-		jq('#' + source + 'last-visit-date').html(replaceNull(person.lastRegularVisit));
+	function showStatusDetails(person) {
+		jq('#alive-status').html(replaceNull(person.aliveStatus));
+		jq('#marital-status').html(replaceNull(formatMaritalStatus(person.maritalStatus)));
+		jq('#last-visit-date').html(replaceNull(person.lastRegularVisit));
 	}
 
-	function showParentDetails(person, source) {
-		jq('#' + source + 'father-first-name').html(replaceNull(person.fathersFirstName));
-		jq('#' + source + 'father-middle-name').html(replaceNull(person.fathersMiddleName));
-		jq('#' + source + 'father-last-name').html(replaceNull(person.fathersLastName));
-		jq('#' + source + 'mother-first-name').html(replaceNull(person.mothersFirstName));
-		jq('#' + source + 'mother-middle-name').html(replaceNull(person.mothersMiddleName));
-		jq('#' + source + 'mother-last-name').html(replaceNull(person.mothersLastName));
+	function showParentDetails(person) {
+		jq('#father-first-name').html(replaceNull(person.fathersFirstName));
+		jq('#father-middle-name').html(replaceNull(person.fathersMiddleName));
+		jq('#father-last-name').html(replaceNull(person.fathersLastName));
+		jq('#mother-first-name').html(replaceNull(person.mothersFirstName));
+		jq('#mother-middle-name').html(replaceNull(person.mothersMiddleName));
+		jq('#mother-last-name').html(replaceNull(person.mothersLastName));
 	}
 
 	function formatMaritalStatus(status) {
@@ -258,7 +256,51 @@ jq(function () {
 	}
 
 	jq('#accept-button').click(function () {
-		ui.navigate('kenyareg', 'merge', {lpiUid: lpiMatch.personGuid, mpiUid: mpiMatch.personGuid});
+		if (lpiMatch && !mpiMatch && requestResult.mpiResult.successful) {
+			showResultBySource('mpi');
+			showDetails(0, 'mpi');
+			jq("html, body").animate({ scrollTop: 0 }, "slow");
+		} else if(mpiMatch && !lpiMatch && requestResult.lpiResult.successful){
+			showResultBySource('lpi');
+			showDetails(0, 'lpi');
+			jq("html, body").animate({ scrollTop: 0 }, "slow");
+		} else if (!lpiMatch && !requestResult.lpiResult.successful && skipPersonIndex) {
+			//show retry dialog
+			kenyaui.openConfirmDialog(
+				{
+					"message": "The LPI could not be contacted. Retry?",
+					"okLabel": "Yes",
+					"cancelLabel": "No",
+					"okCallback": function(){
+						jq("input[name='server']").val(2)
+						jq("#basic-search-form").submit();
+					},
+					"cancelCallback": function() {
+						skipPersonIndex = true;
+						jq("#accept-button").click();
+					}
+				}
+			);
+		} else if (!mpiMatch && !requestResult.mpiResult.successful && skipPersonIndex) {
+			//show retry dialog
+			kenyaui.openConfirmDialog(
+				{
+					"message": "The MPI could not be contacted. Retry?",
+					"okLabel": "Yes",
+					"cancelLabel": "No",
+					"okCallback": function(){
+						jq("input[name='server']").val(3)
+						jq("#basic-search-form").submit();
+					},
+					"cancelCallback": function() {
+						skipPersonIndex = true;
+						jq("#accept-button").click();
+					}
+				}
+			);
+		} else if ((lpiMatch && mpiMatch) || skipPersonIndex) {
+			ui.navigate('kenyareg', 'merge', {lpiUid: lpiMatch.personGuid, mpiUid: mpiMatch.personGuid});
+		}
 	})
 
 	/**
@@ -266,19 +308,19 @@ jq(function () {
 	 * KenyaEMR
 	 */
 
-	//jq('#accept-button').click(function () {
-	//	var nupi = extractNupi(selectedMatch);
-	//	jq.getJSON('/' + OPENMRS_CONTEXT_PATH + '/kenyareg/basicSearch/accept.action', {uuid: nupi})
-	//		.success(function (data) {
-	//			var patId = data;
-	//			if (patId) {
-	//				ui.navigate('kenyaemr', 'registration/registrationViewPatient', {patientId: patId});
-	//			} else {
-	//				alert('Patient not found in EMR.');
-	//			}
-	//		})
-	//		.error(function (xhr, status, err) {
-	//			alert(err);
-	//		})
-	//})
+	/*jq('#accept-button').click(function () {
+		var nupi = extractNupi(selectedMatch);
+		jq.getJSON('/' + OPENMRS_CONTEXT_PATH + '/kenyareg/basicSearch/accept.action', {uuid: nupi})
+			.success(function (data) {
+				var patId = data;
+				if (patId) {
+					ui.navigate('kenyaemr', 'registration/registrationViewPatient', {patientId: patId});
+				} else {
+					alert('Patient not found in EMR.');
+				}
+			})
+			.error(function (xhr, status, err) {
+				alert(err);
+			})
+	})*/
 });

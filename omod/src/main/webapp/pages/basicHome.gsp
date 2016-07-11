@@ -13,18 +13,11 @@
 </div>
 
 <div class="ke-page-content">
-    <td>${ui.includeFragment("kenyareg", "status")}</td>
-    <table>
-        <tr>
-            <td>
-                ${ui.includeFragment("kenyareg", "multipleResults")}
-                ${ui.includeFragment("kenyareg", "individualResult")}
-            </td>
-            <td>
-                ${ui.includeFragment("kenyareg", "multipleMpiResults")}
-                ${ui.includeFragment("kenyareg", "individualMpiResult")}
-            </td>
-        </tr>
-    </table>
+    <div>${ui.includeFragment("kenyareg", "status")}</div>
+    <div class="results">
+        ${ui.includeFragment("kenyareg", "multipleResults")}
+    </div>
+    <div class="detail">
+        ${ui.includeFragment("kenyareg", "individualResult")}
     </div>
 </div>

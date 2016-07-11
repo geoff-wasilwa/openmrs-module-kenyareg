@@ -1,6 +1,7 @@
 package org.openmrs.module.kenyareg.api;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +14,8 @@ import org.openmrs.PatientIdentifier;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.PersonName;
 import org.openmrs.api.PatientService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -23,11 +26,23 @@ import ke.go.moh.oec.PersonIdentifier;
 @Service("personMergeService")
 public class PersonMergeService {
 
+	private Logger log = LoggerFactory.getLogger(PersonMergeService.class);
+
 	@Autowired(required = true)
 	@Qualifier("patientService")
 	PatientService patientService;
+	private final String[] properties = new String[]
+			{
+				"lastName", "firstName", "middleName", "otherName",
+				"clanName", "sex", "birthdate", "mothersFirstName",
+				"mothersMiddleName", "mothersLastName", "fathersFirstName",
+				"fathersMiddleName", "fathersLastName",
+				"villageName", "maritalStatus"
+			};
 
 	public void mergePatientIdentifiers(Patient patient, List<PersonIdentifier> identifiers, Location location) {
+		assert patient != null;
+		assert identifiers != null;
 		for (PersonIdentifier identifier: identifiers) {
 			if (matchesIdentifierInOmrs(identifier.getIdentifierType().toString())) {
 				updateOmrsIdentifier(patient, identifier.getIdentifier(), identifier.getIdentifierType().toString(), location);
@@ -85,9 +100,11 @@ public class PersonMergeService {
 		return fromOmrs;
 	}
 
-	public void mergeLpiMpiPersonProperties(Map<String,Object> mergedProperties,
-			Map<String,Map<String,Object>> conflictedProperties,
-			Person fromLpi, Person fromMpi, String[] properties) {
+	public Map<String, Object> getLpiMpiMergedProperties(Person fromLpi, Person fromMpi) {
+		if (fromLpi == null && fromMpi == null) {
+			return Collections.emptyMap();
+		}
+		Map<String, Object> mergedProperties = new HashMap<String, Object>();
 		for (String property : properties) {
 			String methodName = "get" + StringUtils.capitalize(property);
 			try {
@@ -104,11 +121,6 @@ public class PersonMergeService {
 						mergedProperties.put(property, lpiValue.toString());
 					} else if (StringUtils.equalsIgnoreCase(lpiValue.toString(), mpiValue.toString())) {
 						mergedProperties.put(property, lpiValue.toString());
-					} else {
-						Map<String, Object> conflictedProperty = new HashMap<String, Object>();
-						conflictedProperty.put("lpi", lpiValue.toString());
-						conflictedProperty.put("mpi", mpiValue.toString());
-						conflictedProperties.put(property, conflictedProperty);
 					}
 				} else if (lpiValue instanceof Date || mpiValue instanceof Date) {
 					Date mpiDate = null;
@@ -126,11 +138,6 @@ public class PersonMergeService {
 					mpiDate = (Date)mpiValue;
 					if (lpiDate.compareTo(mpiDate) == 0) {
 						mergedProperties.put(property, lpiDate);
-					} else {
-						Map<String, Object> conflictedProperty = new HashMap<String, Object>();
-						conflictedProperty.put("lpi", lpiDate);
-						conflictedProperty.put("mpi", mpiDate);
-						conflictedProperties.put(property, conflictedProperty);
 					}
 				} else {
 					if (lpiValue == null) {
@@ -139,18 +146,58 @@ public class PersonMergeService {
 						mergedProperties.put(property, lpiValue.toString());
 					} else if (lpiValue == mpiValue) {
 						mergedProperties.put(property, lpiValue.toString());
-					} else {
-						Map<String, Object> conflictedProperty = new HashMap<String, Object>();
-						conflictedProperty.put("lpi", lpiValue.toString());
-						conflictedProperty.put("mpi", mpiValue.toString());
-						conflictedProperties.put(property, conflictedProperty);
 					}
 				}
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				log.warn(e.getMessage());
 			}
 		}
+		return mergedProperties;
+	}
+
+	public Map<String, Map<String, Object>> getLpiMpiConflictingProperties(Person fromLpi, Person fromMpi) {
+		if (fromLpi == null && fromMpi == null) {
+			return Collections.emptyMap();
+		}
+		Map<String, Map<String, Object>> conflictingProperties = new HashMap<String, Map<String, Object>>();
+		for (String property : properties) {
+			String methodName = "get" + StringUtils.capitalize(property);
+			try {
+				Method method = Person.class.getMethod(methodName);
+				Object lpiValue = method.invoke(fromLpi);
+				Object mpiValue = method.invoke(fromMpi);
+				if (lpiValue == null || mpiValue == null) {
+					continue;
+				}
+				if (lpiValue instanceof String || mpiValue instanceof String) {
+					if (!StringUtils.equalsIgnoreCase(lpiValue.toString(), mpiValue.toString())) {
+						Map<String, Object> conflictedProperty = new HashMap<String, Object>();
+						conflictedProperty.put("lpi", lpiValue.toString());
+						conflictedProperty.put("mpi", mpiValue.toString());
+						conflictingProperties.put(property, conflictedProperty);
+					}
+				} else if (lpiValue instanceof Date || mpiValue instanceof Date) {
+					Date mpiDate = (Date)lpiValue;;
+					Date lpiDate = (Date)mpiValue;
+					if (lpiDate.compareTo(mpiDate) != 0) {
+						Map<String, Object> conflictingProperty = new HashMap<String, Object>();
+						conflictingProperty.put("lpi", lpiDate);
+						conflictingProperty.put("mpi", mpiDate);
+						conflictingProperties.put(property, conflictingProperty);
+					}
+				} else {
+					if (lpiValue != mpiValue) {
+						Map<String, Object> conflictingProperty = new HashMap<String, Object>();
+						conflictingProperty.put("lpi", lpiValue.toString());
+						conflictingProperty.put("mpi", mpiValue.toString());
+						conflictingProperties.put(property, conflictingProperty);
+					}
+				}
+			} catch (Exception e) {
+				log.warn(e.getMessage());
+			}
+		}
+		return conflictingProperties;
 	}
 
 }
