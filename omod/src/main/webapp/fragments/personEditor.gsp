@@ -51,7 +51,6 @@
         def isInConflict = conflictedProperties.find { key, value ->
             return fieldDefinition.id == key
         }
-        System.out.println(isInConflict)
         return !isInConflict
     }
     def mergedFields = mergedPersonProperties.collect { [it] }
@@ -75,7 +74,6 @@
                 conflictedPair.push(lpiMpi)
                 conflictedPair.push(resolveInput.toString());
             }
-            System.out.println(conflictedPair);
             conflictingFields.push(conflictedPair);
         }
     }
