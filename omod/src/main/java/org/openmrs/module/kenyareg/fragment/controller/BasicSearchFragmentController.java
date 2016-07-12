@@ -29,6 +29,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,22 +63,21 @@ public class BasicSearchFragmentController {
 
 	public RequestResultPair search(@MethodParam("newBasicSearchForm") @BindParams BasicSearchForm form,
 	                                @SpringBean("registryService") RegistryService registryService,
-	                                @RequestParam("server")Integer serverId,
 	                                Session session, UiUtils ui) {
 		ui.validate(form, form, null);
 
-		setDisplayAttributes(form.getServer(), session);
+		//setDisplayAttributes(form.getServer(), session);
 
 		Person query = form.getPerson();
-        RequestResultPair resultPair = registryService.findPerson(serverId, query);
+        RequestResultPair resultPair = registryService.findPerson(form.getServer(), query);
 
-		if (serverId == Server.LPI) {
+		if (form.getServer() == Server.LPI) {
 			session.setAttribute("lpiResult", resultPair.getLpiResult());
 		}
-		if (serverId == Server.MPI) {
+		if (form.getServer() == Server.MPI) {
 			session.setAttribute("mpiResult", resultPair.getMpiResult());
 		}
-		if (serverId == Server.MPI_LPI) {
+		if (form.getServer() == Server.MPI_LPI) {
 			session.setAttribute("lpiResult", resultPair.getLpiResult());
 			session.setAttribute("mpiResult", resultPair.getMpiResult());
 		}
@@ -111,6 +111,9 @@ public class BasicSearchFragmentController {
 		private int server;
 		private String surname;
 		private String firstName;
+		private String middleName;
+		private String otherName;
+		private Date birthDate;
 
 		public BasicSearchForm() {
 		}
@@ -139,15 +142,42 @@ public class BasicSearchFragmentController {
 			this.surname = surname;
 		}
 
+		public String getMiddleName() {
+			return middleName;
+		}
+
+		public void setMiddleName(String middleName) {
+			this.middleName = middleName;
+		}
+
+		public String getOtherName() {
+			return otherName;
+		}
+
+		public void setOtherName(String otherName) {
+			this.otherName = otherName;
+		}
+
+		public Date getBirthDate() {
+			return birthDate;
+		}
+
+		public void setBirthDate(Date birthDate) {
+			this.birthDate = birthDate;
+		}
+
 		@Override
 		public void validate(Object o, Errors errors) {
-			//require(errors, "firstName");
+			requireAny(errors, "surname", "firstName", "middleName");
 		}
 
 		public Person getPerson() {
 			Person person = new Person();
 			person.setFirstName(firstName);
 			person.setLastName(surname);
+			person.setMiddleName(middleName);
+			person.setOtherName(otherName);
+			person.setBirthdate(birthDate);
 			return person;
 		}
 	}

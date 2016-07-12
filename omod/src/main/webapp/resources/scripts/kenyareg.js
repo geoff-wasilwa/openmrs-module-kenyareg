@@ -26,41 +26,46 @@ jq(function () {
 	 */
 	var skipPersonIndex = false;
 
+	/*
+	 * Indicates current source being viewed
+	 */
+	var source = null;
+
 	/**
 	 * Sets up the basic search form to be submitted via AJAX.
 	 */
 	kenyaui.setupAjaxPost('basic-search-form', {
 		onSuccess: function (data) {
 			requestResult = data;
-			if (!data.lpiResult.successful && !data.mpiResult.successful) {
-				kenyaui.openConfirmDialog(
-					{
-						"message": "Neither the LPI nor the MPI could be contacted. Retry?",
-						"okLabel": "Yes",
-						"cancelLabel": "No",
-						"okCallback": function(){
-							jq("#basic-search-form").submit();
-						}
-					}
-				);
+			if (!lpiMatch && data.lpiResult.successful) {
+				source = "lpi";
+				showResultBySource('lpi');
+				showDetails(0, 'lpi');
+			} else if (!mpiMatch && data.mpiResult.successful) {
+				source = "mpi";
+				showResultBySource('mpi');
+				showDetails(0, 'mpi');
+			} else if (!lpiMatch && !data.lpiResult.successful) {
+				showRetryDialog("The LPI could not be contacted. Retry?", 3);
+			} else if (!mpiMatch && !data.mpiResult.successful) {
+				showRetryDialog("The MPI could not be contacted. Retry?", 2);
 			} else {
-				if (data.lpiResult.successful) {
-					showResultBySource('mpi');
-					showDetails(0, 'mpi')
-				} else if (data.mpiResult.successful) {
-					showResultBySource('lpi');
-					showDetails(0, 'lpi');
-				}
+				kenyaui.openConfirmDialog(
+						{
+							"message": "Neither the LPI nor the MPI could be contacted. Retry?",
+							"okLabel": "Yes",
+							"cancelLabel": "No",
+							"okCallback": function(){
+								jq("#basic-search-form").submit();
+							}
+						}
+				);
 			}
 		}
 	});
 
-	jq('#lpi-results-table tbody').on('click', 'tr', function (e) {
-		showDetails(this.rowIndex - 1, 'lpi');
-	});
-
-	jq('#mpi-results-table tbody').on('click', 'tr', function (e) {
-		showDetails(this.rowIndex - 1, 'mpi');
+	jq('#person-index-results-table').on('click', 'tr', function (e) {
+		showDetails(this.rowIndex - 1, source);
 	});
 
 	function showResults() {
@@ -255,6 +260,24 @@ jq(function () {
 		return nupi;
 	}
 
+	function showRetryDialog(message, server) {
+		kenyaui.openConfirmDialog(
+			{
+				"message": message,
+				"okLabel": "Yes",
+				"cancelLabel": "No",
+				"okCallback": function(){
+					jq("input[name='server']").val(server)
+					jq("#basic-search-form").submit();
+				},
+				"cancelCallback": function() {
+					skipPersonIndex = true;
+					jq("#accept-button").click();
+				}
+			}
+		);
+	}
+
 	jq('#accept-button').click(function () {
 		if (lpiMatch && !mpiMatch && requestResult.mpiResult.successful) {
 			showResultBySource('mpi');
@@ -264,42 +287,12 @@ jq(function () {
 			showResultBySource('lpi');
 			showDetails(0, 'lpi');
 			jq("html, body").animate({ scrollTop: 0 }, "slow");
-		} else if (!lpiMatch && !requestResult.lpiResult.successful && skipPersonIndex) {
-			//show retry dialog
-			kenyaui.openConfirmDialog(
-				{
-					"message": "The LPI could not be contacted. Retry?",
-					"okLabel": "Yes",
-					"cancelLabel": "No",
-					"okCallback": function(){
-						jq("input[name='server']").val(2)
-						jq("#basic-search-form").submit();
-					},
-					"cancelCallback": function() {
-						skipPersonIndex = true;
-						jq("#accept-button").click();
-					}
-				}
-			);
-		} else if (!mpiMatch && !requestResult.mpiResult.successful && skipPersonIndex) {
-			//show retry dialog
-			kenyaui.openConfirmDialog(
-				{
-					"message": "The MPI could not be contacted. Retry?",
-					"okLabel": "Yes",
-					"cancelLabel": "No",
-					"okCallback": function(){
-						jq("input[name='server']").val(3)
-						jq("#basic-search-form").submit();
-					},
-					"cancelCallback": function() {
-						skipPersonIndex = true;
-						jq("#accept-button").click();
-					}
-				}
-			);
+		} else if (!lpiMatch && !requestResult.lpiResult.successful && !skipPersonIndex) {
+			showRetryDialog("The LPI could not be contacted. Retry?", 3);
+		} else if (!mpiMatch && !requestResult.mpiResult.successful && !skipPersonIndex) {
+			showRetryDialog("The MPI could not be contacted. Retry?", 2);
 		} else if ((lpiMatch && mpiMatch) || skipPersonIndex) {
-			ui.navigate('kenyareg', 'merge', {lpiUid: lpiMatch.personGuid, mpiUid: mpiMatch.personGuid});
+			ui.navigate('kenyareg', 'merge', {lpiUid: (lpiMatch && lpiMatch.personGuid), mpiUid: (mpiMatch && mpiMatch.personGuid)});
 		}
 	})
 
