@@ -7,7 +7,7 @@
 %>
 
 <div id="results2">
-    <table id="lpi-results-table" class="results-table">
+    <table id="person-index-results-table" class="results-table">
         <thead>
         <tr>
             <th>Match Score</th>
