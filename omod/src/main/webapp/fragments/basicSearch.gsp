@@ -23,6 +23,30 @@
                     ],
                     [
                             [
+                                    formFieldName: "middleName",
+                                    label        : "Middle Name",
+                                    class        : java.lang.String,
+                                    id           : "middleName"
+                            ]
+                    ],
+                    [
+                            [
+                                    formFieldName: "otherName",
+                                    label        : "Other Name",
+                                    class        : java.lang.String,
+                                    id           : "otherName"
+                            ]
+                    ],
+                    [
+                            [
+                                    formFieldName: "birthDate",
+                                    label        : "Birth Date",
+                                    class        : java.util.Date,
+                                    id           : "birthDate"
+                            ]
+                    ],
+                    [
+                            [
                                 hiddenInputName: "server",
                                 value: 1
                             ]
@@ -32,15 +56,12 @@
 
 <form id="basic-search-form" method="post" action="${ui.actionLink("kenyareg", "basicSearch", "search")}">
     <div class="ke-form-globalerrors" style="display: none"></div>
-
     <fieldset>
-        <legend>Criteria</legend>
         <% fields.each { %>
         ${ui.includeFragment("kenyaui", "widget/rowOfFields", [fields: it])}
         <% } %>
     </fieldset>
-
     <div class="ke-form-footer">
-        <button type="submit"><img src="${ui.resourceLink("kenyaui", "images/glyphs/ok.png")}"/> Search</button>
+        <button class="search" type="submit"><img src="${ui.resourceLink("kenyaui", "images/glyphs/ok.png")}"/> Search</button>
     </div>
 </form>

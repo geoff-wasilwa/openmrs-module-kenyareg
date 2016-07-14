@@ -26,9 +26,13 @@ import org.openmrs.ui.framework.annotation.MethodParam;
 import org.openmrs.ui.framework.annotation.SpringBean;
 import org.openmrs.ui.framework.session.Session;
 import org.springframework.validation.Errors;
+import org.springframework.validation.ValidationUtils;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class BasicSearchFragmentController {
 
@@ -62,19 +66,24 @@ public class BasicSearchFragmentController {
 	                                Session session, UiUtils ui) {
 		ui.validate(form, form, null);
 
-		setDisplayAttributes(form.getServer(), session);
+		//setDisplayAttributes(form.getServer(), session);
 
 		Person query = form.getPerson();
-        RequestResultPair resultPair = registryService.findPerson(Server.MPI_LPI, query);
+        RequestResultPair resultPair = registryService.findPerson(form.getServer(), query);
 
-		session.setAttribute("lpiResult", resultPair.getLpiResult());
-		session.setAttribute("mpiResult", resultPair.getMpiResult());
-
-		RequestResult lpi = session.getAttribute("lpiResult", RequestResult.class);
+		if (form.getServer() == Server.LPI) {
+			session.setAttribute("lpiResult", resultPair.getLpiResult());
+		}
+		if (form.getServer() == Server.MPI) {
+			session.setAttribute("mpiResult", resultPair.getMpiResult());
+		}
+		if (form.getServer() == Server.MPI_LPI) {
+			session.setAttribute("lpiResult", resultPair.getLpiResult());
+			session.setAttribute("mpiResult", resultPair.getMpiResult());
+		}
 
 		return resultPair;
 	}
-
 
 	public Integer accept(@RequestParam(value = "uuid", required = true) String uuid,
 	                      @SpringBean("registryService") RegistryService registryService,
@@ -102,6 +111,9 @@ public class BasicSearchFragmentController {
 		private int server;
 		private String surname;
 		private String firstName;
+		private String middleName;
+		private String otherName;
+		private Date birthDate;
 
 		public BasicSearchForm() {
 		}
@@ -130,15 +142,42 @@ public class BasicSearchFragmentController {
 			this.surname = surname;
 		}
 
+		public String getMiddleName() {
+			return middleName;
+		}
+
+		public void setMiddleName(String middleName) {
+			this.middleName = middleName;
+		}
+
+		public String getOtherName() {
+			return otherName;
+		}
+
+		public void setOtherName(String otherName) {
+			this.otherName = otherName;
+		}
+
+		public Date getBirthDate() {
+			return birthDate;
+		}
+
+		public void setBirthDate(Date birthDate) {
+			this.birthDate = birthDate;
+		}
+
 		@Override
 		public void validate(Object o, Errors errors) {
-
+			requireAny(errors, "surname", "firstName", "middleName");
 		}
 
 		public Person getPerson() {
 			Person person = new Person();
 			person.setFirstName(firstName);
 			person.setLastName(surname);
+			person.setMiddleName(middleName);
+			person.setOtherName(otherName);
+			person.setBirthdate(birthDate);
 			return person;
 		}
 	}

@@ -23,7 +23,5 @@
     </table>
 
     <br>
-    <button id="reject-button" class="button">Reject</button>
+    <button id="reject-button">Reject</button> <button id="accept-button"><img src="${ui.resourceLink("kenyaui", "images/glyphs/ok.png")}"/>Accept</button>
 </div>
-
-
