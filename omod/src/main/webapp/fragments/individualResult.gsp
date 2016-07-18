@@ -1,7 +1,10 @@
 <%
     ui.decorateWith("kenyaui", "panel", [heading: "Details"])
 
+    ui.includeCss("kenyareg", "bootstrap.css")
     ui.includeCss("kenyareg", "kenyareg.css")
+
+    ui.includeJavascript("kenyareg", "bootstrap.js")
 %>
 
 <script type="application/javascript">
@@ -12,114 +15,66 @@
     });
 </script>
 
-<div id="details">
+<div class="panel panel-default">
+    <div class="panel-heading">Unique Identifiers</div>
+    <div class="panel-body unique-identifiers">
+    </div>
+</div>
 
-    <table>
-        <tbody>
-        <tr>
-            <td>
-                <table id="score-table" class="details-table">
-                    <thead>
-                    <tr>
-                        <th class="centered">Match Score</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td id="score" class="centered" style="text-align: center"></td>
-                    </tr>
-                    </tbody>
-                </table>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <table id="identifier-table" class="details-table" style="table-layout: fixed">
-                    <thead>
-                    <tr>
-                        <th colspan="2" class="centered">Unique Identifiers</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td></td>
-                    </tr>
-                    </tbody>
-                </table>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <table id="basic-info-table" class="details-table" style="table-layout: fixed">
-                    <thead>
-                    <tr>
-                        <th class="centered" colspan="2">Personal Information</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td class="field-label">First Name:</td>
-                        <td id="first-name"></td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Middle Name:</td>
-                        <td id="middle-name"></td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Last Name:</td>
-                        <td id="last-name"></td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Birth Date:</td>
-                        <td id="birth-date"></td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Sex:</td>
-                        <td id="sex"></td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Alive:</td>
-                        <td id="alive-status"></td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Marital Status:</td>
-                        <td id="marital-status"></td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Last Visit Date:</td>
-                        <td id="last-visit-date"></td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Father's First Name:</td>
-                        <td id="father-first-name"></td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Father's Middle Name:</td>
-                        <td id="father-middle-name"></td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Father's Last Name:</td>
-                        <td id="father-last-name"></td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Mother's First Name:</td>
-                        <td id="mother-first-name"></td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Mother's Middle Name:</td>
-                        <td id="mother-middle-name"></td>
-                    </tr>
-                    <tr>
-                        <td class="field-label">Mother's Last Name:</td>
-                        <td id="mother-last-name"></td>
-                    </tr>
-                    </tbody>
-                </table>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+<div class="panel panel-default">
+    <div class="panel-heading">Personal Information</div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-4">
+                First Name: <span class="first-name"></span>
+            </div>
+            <div class="col-md-4">
+                Middle Name: <span class="middle-name"></span>
+            </div>
+            <div class="col-md-4">
+                Last Name: <span class="last-name"></span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                Sex: <span class="sex">Male</span>
+            </div>
+            <div class="col-md-4">
+                Birth Date: <span class="birth-date"></span>
+            </div>
+        </div>
+        <div>Marital Status: <span class="marital-status"></span></div>
+        <div>Alive: <span class="alive-status"></span></div>
+    </div>
+</div>
 
-    <br>
+    <div class="panel panel-default">
+        <div class="panel-heading">Parent Information</div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-4">
+                    Father's First Name: <span class="father-first-name"></span>
+                </div>
+                <div class="col-md-4">
+                    Father's Middle Name: <span class="father-middle-name"></span>
+                </div>
+                <div class="col-md-4">
+                    Father's Last Name: <span class="father-last-name"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    Mother's First Name: <span class="mother-first-name"></span>
+                </div>
+                <div class="col-md-4">
+                    Mother's Middle Name: <span class="mother-middle-name"></span>
+                </div>
+                <div class="col-md-4">
+                    Mother's Last Name: <span class="mother-last-name"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <button id="accept-button" class="button">Accept</button>
 </div>

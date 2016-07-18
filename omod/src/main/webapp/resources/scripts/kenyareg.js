@@ -6,6 +6,17 @@ jq(function () {
 	jq('#surname').val("Kamau");
 	jq('#firstName').val("Rose");
 
+
+	/**
+	 * Initialize table to show empty row
+	 */
+	showEmpty();
+
+	/**
+	 * Hide details panel
+	 */
+	jq(".detail").hide();
+
 	/**
 	 * The search result after sending a query to the MPI, LPI or both.
 	 */
@@ -26,7 +37,7 @@ jq(function () {
 	 */
 	var skipPersonIndex = false;
 
-	/*
+	/**
 	 * Indicates current source being viewed
 	 */
 	var source = null;
@@ -35,11 +46,6 @@ jq(function () {
 	 * Sets up the basic search form to be submitted via AJAX.
 	 */
 	var skipPersonIndex = false;
-
-	/*
-	 * Indicates current source being viewed
-	 */
-	var source = null;
 
 	/**
 	 * Sets up the basic/advanced search form to be submitted via AJAX.
@@ -111,7 +117,7 @@ jq(function () {
 		var id = '#person-index-results-table';
 		jq(id).append(
 			'<tr>' +
-				'<td colspan="6">Nothing to show</td>' +
+				'<td colspan="6" style="text-align:center;">Nothing to show</td>' +
 			'</tr>');
 	}
 
@@ -134,7 +140,7 @@ jq(function () {
 	}
 
 	function replaceNull(value) {
-		return value ? value : "";
+		return value ? value : "--";
 	}
 
 	function showDetails(i, source) {
@@ -146,54 +152,56 @@ jq(function () {
 			mpiMatch = requestResult.mpiResult.data[i];
 			selected = mpiMatch;
 		}
-		showMatchScore(selected)
-		showIdentifierDetails(selected);
-		showBasicDetails(selected);
-		showStatusDetails(selected);
-		showParentDetails(selected);
+		if (selected) {
+			jq(".detail").show('slow');
+			showMatchScore(selected)
+			showIdentifierDetails(selected);
+			showBasicDetails(selected);
+			showStatusDetails(selected);
+			showParentDetails(selected);
+		}
 	}
 
 	function showMatchScore(person, source) {
-		jq('#score').html(replaceNull(person.matchScore));
+		jq("div.detail .ke-panel-heading").html("Details (Match Score: " + replaceNull(person.matchScore) + ")")
 	}
 
 	function showIdentifierDetails(person) {
-		jq('#identifier-table > tbody').html("");
 		var personIdList = person.personIdentifierList;
 		if (personIdList) {
 			for (var j = 0; j < personIdList.length; j++) {
 				var personId = personIdList[j];
-				jq(id).append('<tr>' +
-				'<td class="field-label">' + replaceNull(formatIdentifierType(personId.identifierType)) + '</td>' +
-				'<td>' + replaceNull(personId.identifier) + '</td>' +
-				'</tr>');
+				jq(".unique-identifiers")
+					.append('<div>' + replaceNull(formatIdentifierType(personId.identifierType)) + ': '
+						+ replaceNull(personId.identifier) + '</div>'
+					);
 			}
 		} else {
-			jq('#identifier-table').append('<tr><td></td></tr>');
+			jq('.unique-identifiers').html('No Identifiers');
 		}
 	}
 
 	function showBasicDetails(person) {
-		jq('#first-name').html(replaceNull(person.firstName));
-		jq('#middle-name').html(replaceNull(person.middleName));
-		jq('#last-name').html(replaceNull(person.lastName));
-		jq('#birth-date').html(replaceNull(formatDate(person.birthdate)));
-		jq('#sex').html(replaceNull(person.sex));
+		jq('.first-name').html(replaceNull(person.firstName));
+		jq('.middle-name').html(replaceNull(person.middleName));
+		jq('.last-name').html(replaceNull(person.lastName));
+		jq('.birth-date').html(replaceNull(formatDate(person.birthdate)));
+		jq('.sex').html(replaceNull(person.sex));
 	}
 
 	function showStatusDetails(person) {
-		jq('#alive-status').html(replaceNull(person.aliveStatus));
-		jq('#marital-status').html(replaceNull(formatMaritalStatus(person.maritalStatus)));
-		jq('#last-visit-date').html(replaceNull(person.lastRegularVisit));
+		jq('.alive-status').html(replaceNull(person.aliveStatus));
+		jq('.marital-status').html(replaceNull(formatMaritalStatus(person.maritalStatus)));
+		jq('.last-visit-date').html(replaceNull(person.lastRegularVisit));
 	}
 
 	function showParentDetails(person) {
-		jq('#father-first-name').html(replaceNull(person.fathersFirstName));
-		jq('#father-middle-name').html(replaceNull(person.fathersMiddleName));
-		jq('#father-last-name').html(replaceNull(person.fathersLastName));
-		jq('#mother-first-name').html(replaceNull(person.mothersFirstName));
-		jq('#mother-middle-name').html(replaceNull(person.mothersMiddleName));
-		jq('#mother-last-name').html(replaceNull(person.mothersLastName));
+		jq('.father-first-name').html(replaceNull(person.fathersFirstName));
+		jq('.father-middle-name').html(replaceNull(person.fathersMiddleName));
+		jq('.father-last-name').html(replaceNull(person.fathersLastName));
+		jq('.mother-first-name').html(replaceNull(person.mothersFirstName));
+		jq('.mother-middle-name').html(replaceNull(person.mothersMiddleName));
+		jq('.mother-last-name').html(replaceNull(person.mothersLastName));
 	}
 
 	function formatMaritalStatus(status) {
@@ -311,6 +319,10 @@ jq(function () {
 			ui.navigate('kenyareg', 'merge', {lpiUid: (lpiMatch && lpiMatch.personGuid), mpiUid: (mpiMatch && mpiMatch.personGuid)});
 		}
 	})
+
+	jq('#reject-button').on("click", function (event) {
+		ui.navigate("kenyaemr", "registration/registrationHome");
+	});
 
 	/**
 	 * This is the original implementation. It directly extracts the NUPI uses it to retrieve the patient from
