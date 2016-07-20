@@ -86,39 +86,6 @@ jq(function () {
 		mpiMatch = null;
 	})
 
-	/**
-	 * Sets up the basic search form to be submitted via AJAX.
-	 */
-	kenyaui.setupAjaxPost('identifier-search-form', {
-		onSuccess: function (data) {
-			requestResult = data;
-			if (!lpiMatch && data.lpiResult.successful) {
-				source = "lpi";
-				showResultBySource('lpi');
-				showDetails(0, 'lpi');
-			} else if (!mpiMatch && data.mpiResult.successful) {
-				source = "mpi";
-				showResultBySource('mpi');
-				showDetails(0, 'mpi');
-			} else if (!lpiMatch && !data.lpiResult.successful) {
-				showRetryDialog("The LPI could not be contacted. Retry?", 3);
-			} else if (!mpiMatch && !data.mpiResult.successful) {
-				showRetryDialog("The MPI could not be contacted. Retry?", 2);
-			} else {
-				kenyaui.openConfirmDialog(
-					{
-						"message": "Neither the LPI nor the MPI could be contacted. Retry?",
-						"okLabel": "Yes",
-						"cancelLabel": "No",
-						"okCallback": function(){
-							jq("#identifier-search-form").submit();
-						}
-					}
-				);
-			}
-		}
-	});
-
 	jq('#person-index-results-table').on('click', 'tr', function (e) {
 		showDetails(this.rowIndex - 1, source);
 	});

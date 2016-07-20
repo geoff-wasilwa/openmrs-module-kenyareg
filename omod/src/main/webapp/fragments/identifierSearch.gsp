@@ -46,7 +46,7 @@
 
 %>
 
-<form id="identifier-search-form" method="post" action="${ui.actionLink("kenyareg", "identifierSearch", "search")}">
+<form id="search-form" method="post" action="${ui.actionLink("kenyareg", "identifierSearch", "search")}">
     <div class="ke-form-globalerrors" style="display: none"></div>
     <fieldset>
         ${ui.includeFragment("kenyaui", "widget/radioButtons", [formFieldName: formFieldName, options: options, selected: "1", separator: "&nbsp;"])}
