@@ -26,9 +26,8 @@ import org.openmrs.ui.framework.session.Session;
 
 public class AdvancedSearchFragmentController {
 
-	public void controller(Session session) {
-		session.setAttribute("lpiResult", null);
-		session.setAttribute("mpiResult", null);
+	public void controller( @SpringBean("searchHelper") SearchHelper searchHelper, Session session) {
+		searchHelper.initialize(session);
 	}
 
 	public RequestResultPair search(@MethodParam("newBasicSearchForm") @BindParams AdvancedSearchForm form,

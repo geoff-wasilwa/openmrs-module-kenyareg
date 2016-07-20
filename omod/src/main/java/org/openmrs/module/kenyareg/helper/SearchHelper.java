@@ -19,6 +19,16 @@ import java.util.List;
 @Component
 public class SearchHelper {
 
+    public void initialize(Session session) {
+        session.setAttribute("lpiResult", null);
+        session.setAttribute("mpiResult", null);
+
+        session.setAttribute("lpiDisplayed", null);
+        session.setAttribute("mpiDisplayed", null);
+
+        session.setAttribute("lastResort", null);
+    }
+
     public RequestResultPair search(
             RegistryService registryService,
             Session session,
@@ -38,7 +48,7 @@ public class SearchHelper {
             session.setAttribute("lpiResult", resultPair.getLpiResult());
             session.setAttribute("mpiResult", resultPair.getMpiResult());
         }
-
+        setDisplayAttributes(form.getServer(), session);
         return resultPair;
     }
 
@@ -58,4 +68,20 @@ public class SearchHelper {
         }
         return registryService.acceptPerson(fromMpi).getId();
     }
+
+    private void setDisplayAttributes(int server, Session session) {
+        switch (server) {
+            case Server.MPI_LPI:
+                session.setAttribute("lpiDisplayed", Boolean.FALSE);
+                session.setAttribute("mpiDisplayed", Boolean.FALSE);
+                break;
+            case Server.MPI:
+                session.setAttribute("mpiDisplayed", Boolean.FALSE);
+                break;
+            case Server.LPI:
+                session.setAttribute("lpiDisplayed", Boolean.FALSE);
+                break;
+        }
+    }
+
 }

@@ -16,14 +16,8 @@ import org.openmrs.ui.framework.session.Session;
  */
 public class IdentifierSearchFragmentController {
 
-    public void controller(Session session) {
-        session.setAttribute("lpiResult", null);
-        session.setAttribute("mpiResult", null);
-
-        session.setAttribute("lpiDisplayed", null);
-        session.setAttribute("mpiDisplayed", null);
-
-        session.setAttribute("lastResort", null);
+    public void controller( @SpringBean("searchHelper") SearchHelper searchHelper, Session session) {
+        searchHelper.initialize(session);
     }
 
     public RequestResultPair search(@MethodParam("newIdentifierSearchForm") @BindParams IdentifierSearchForm form,
