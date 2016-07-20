@@ -19,7 +19,6 @@ import org.openmrs.ui.framework.annotation.BindParams;
 import org.openmrs.ui.framework.annotation.MethodParam;
 import org.openmrs.ui.framework.annotation.SpringBean;
 import org.openmrs.ui.framework.session.Session;
-import org.springframework.web.bind.annotation.RequestParam;
 
 public class BasicSearchFragmentController {
 
@@ -33,13 +32,6 @@ public class BasicSearchFragmentController {
                                     Session session,
                                     UiUtils ui) {
         return searchHelper.search(registryService, session, form, ui);
-    }
-
-    public Integer accept(@RequestParam(value = "uuid", required = true) String uuid,
-                          @SpringBean("registryService") RegistryService registryService,
-                          @SpringBean("searchHelper") SearchHelper searchHelper,
-                          Session session) {
-        return searchHelper.accept(registryService, session, uuid);
     }
 
     public BasicSearchForm newBasicSearchForm() {

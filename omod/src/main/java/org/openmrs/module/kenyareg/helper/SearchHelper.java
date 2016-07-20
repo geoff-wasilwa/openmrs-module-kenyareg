@@ -1,7 +1,6 @@
 package org.openmrs.module.kenyareg.helper;
 
 import ke.go.moh.oec.Person;
-import org.go2itech.oecui.data.RequestResult;
 import org.go2itech.oecui.data.RequestResultPair;
 import org.go2itech.oecui.data.Server;
 import org.openmrs.module.kenyareg.api.RegistryService;
@@ -10,8 +9,6 @@ import org.openmrs.module.kenyaui.form.ValidatingCommandObject;
 import org.openmrs.ui.framework.UiUtils;
 import org.openmrs.ui.framework.session.Session;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * Created by gitahi on 20/07/16.
@@ -50,23 +47,6 @@ public class SearchHelper {
         }
         setDisplayAttributes(form.getServer(), session);
         return resultPair;
-    }
-
-    public Integer accept(RegistryService registryService,
-                          Session session,
-                          String uuid) {
-        Person fromMpi = null;
-        List<Person> personList = (List<Person>) session.getAttribute("lpiResult", RequestResult.class).getData();
-        for (Person person : personList) {
-            if (person.getPersonGuid().equals(uuid)) {
-                fromMpi = person;
-                break;
-            }
-        }
-        if (fromMpi == null) {
-            return null;
-        }
-        return registryService.acceptPerson(fromMpi).getId();
     }
 
     private void setDisplayAttributes(int server, Session session) {
