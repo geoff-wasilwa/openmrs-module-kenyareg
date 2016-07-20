@@ -83,3 +83,7 @@
     width: 20%;
     margin: 0 auto;
 }
+
+body {
+    background: #FFF url('/kenyaemr/ms/uiframework/resource/kenyaui/images/background.png') repeat-y;
+}
