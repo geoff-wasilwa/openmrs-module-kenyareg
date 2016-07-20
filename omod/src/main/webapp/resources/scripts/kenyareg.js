@@ -240,16 +240,16 @@ jq(function () {
                     formatted = 'Patient Registry ID';
                     break;
                 case 'masterPatientRegistryId':
-                    formatted = 'Master Patient Registry ID';
+                    formatted = 'MPI ID';
                     break;
                 case 'cccUniqueId':
-                    formatted = 'CCC Unique ID';
+                    formatted = 'UPN';
                     break;
                 case 'cccLocalId':
-                    formatted = 'CCC Local ID';
+                    formatted = 'Clinic ID';
                     break;
                 case 'kisumuHdssId':
-                    formatted = 'Kisumu HDSS ID';
+                    formatted = 'NUPI';
                     break;
                 default:
                     formatted = '';
