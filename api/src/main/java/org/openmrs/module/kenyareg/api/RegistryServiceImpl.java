@@ -78,12 +78,16 @@ public class RegistryServiceImpl extends BaseOpenmrsService implements RegistryS
 	public Patient acceptPerson(Person fromMpi) {
 		org.openmrs.Person fromOmrs = personService.getPersonByUuid(fromMpi.getPersonGuid());
 		org.openmrs.Person merged = mergePerson(fromOmrs, fromMpi);
-		Patient patient;
-		if (merged.isPatient()) {
-			patient = (Patient) merged;
-		} else {
-			patient = new Patient(merged);
-		}
+		Patient patient= (Patient) merged;
+		System.out.println("Check ID and if preferred: "+patient.getPatientIdentifier());
+		System.out.println("Check ID and if preferred: "+patient.getPatientIdentifier().isPreferred());
+
+
+//		if (merged.isPatient()) {
+//			patient = (Patient) merged;
+//		} else {
+//			patient = new Patient(merged);
+//		}
 		return patientService.savePatient(patient);
 	}
 
@@ -92,12 +96,14 @@ public class RegistryServiceImpl extends BaseOpenmrsService implements RegistryS
 			fromOmrs = new org.openmrs.Person();
 			fromOmrs.setUuid(fromMpi.getPersonGuid());
 		}
-		mergeService.mergePerson(fromOmrs, fromMpi);
-		Patient patient = null;
+		org.openmrs.Person person = mergeService.mergePerson(fromOmrs, fromMpi);
+		Patient patient;
+		System.out.println("The Patient before running= "+person);
+		System.out.println("The Patient before running= "+person.getGivenName());
 		if (fromOmrs.isPatient()) {
-			patient = (Patient)fromOmrs;
+			patient = (Patient)person;
 		} else {
-			patient = new Patient(fromOmrs);
+			patient = new Patient(person);
 		}
 		List<PersonIdentifier> personIdentifiers = fromMpi.getPersonIdentifierList();
 		if (personIdentifiers == null) {
@@ -108,14 +114,32 @@ public class RegistryServiceImpl extends BaseOpenmrsService implements RegistryS
 		PatientIdentifier openmrsId = patient.getPatientIdentifier(openmrsIdType);
 
 		if (openmrsId == null) {
+			//no openmrs id....set it
 			String generated = Context.getService(IdentifierSourceService.class).generateIdentifier(openmrsIdType, "Registration");
 			openmrsId = new PatientIdentifier(generated, openmrsIdType, emrService.getDefaultLocation());
-			patient.addIdentifier(openmrsId);
-
-			if (!patient.getPatientIdentifier().isPreferred()) {
-				openmrsId.setPreferred(true);
+			if(patient.getPatientIdentifier() != null){
+				if (!patient.getPatientIdentifier().isPreferred()) {
+					openmrsId.setPreferred(true);
+				}
 			}
+
+		}else{
+			//openmrs id exists, check if there is a preferred
+			if(patient.getPatientIdentifier() != null){
+				if (!patient.getPatientIdentifier().isPreferred()) {
+					patient.getPatientIdentifier(openmrsIdType).setPreferred(true);
+				}
+			}
+
 		}
-		return fromOmrs;
+		patient.addIdentifier(openmrsId);
+
+		System.out.println("Try out the ID = "+openmrsId);
+		System.out.println("Try out the preferred = "+openmrsId.isPreferred());
+		System.out.println("Try out the ID value = "+openmrsId.getIdentifier());
+		System.out.println("Try out the ID type = "+openmrsId.getIdentifierType().getName());
+		System.out.println("The Patient Name = "+patient.getFamilyName());
+		System.out.println("The Patient ID is preferred = "+patient.getPatientIdentifier().isPreferred());
+		return patient;
 	}
 }
