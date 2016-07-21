@@ -24,13 +24,16 @@
         return mergedFields
     }
 
-    def nameFieldDefinitions = [
+    def basicNameFieldDefinitions = [
         [ formFieldName: "lastName", label : "Surname", class : java.lang.String, id : "lastName" ],
         [ formFieldName: "firstName", label : "First Name", class : java.lang.String, id : "firstName" ],
         [ formFieldName: "middleName", label : "Middle Name", class : java.lang.String, id : "middleName" ],
+    ]
+
+    def otherNameFieldDefinition = [
         [ formFieldName: "otherName", label : "Other Name(s)", class : java.lang.String, id : "otherName" ],
     ]
-    
+
     def otherDemoFieldDefinitions = [
         [ formFieldName: "birthdate", label : "Birth Date", class : java.util.Date, id : "birthdate" ],
         [ formFieldName: "sex", label : "Sex", class : java.lang.String, id : "sex",
@@ -67,24 +70,27 @@
         [ formFieldName: "mothersLastName", label : "Mother's Last Name", class : java.lang.String, id : "mothersLastName" ]
     ]
 
-    initializeFields(nameFieldDefinitions)
+    initializeFields(basicNameFieldDefinitions)
+    initializeFields(otherNameFieldDefinition)
     initializeFields(otherDemoFieldDefinitions)
     initializeFields(fatherFieldDefinitions)
     initializeFields(motherFieldDefinitions)
     
-    def mergedNameFields = removeFieldsInConflict(nameFieldDefinitions);
-    def mergedOtherDemoFields = removeFieldsInConflict(otherDemoFieldDefinitions);
-    def mergedFatherFields = removeFieldsInConflict(fatherFieldDefinitions);
-    def mergedMotherFields = removeFieldsInConflict(motherFieldDefinitions);
+    def mergedNameFields = removeFieldsInConflict(basicNameFieldDefinitions)
+    def mergedOtherNameFields = removeFieldsInConflict(otherNameFieldDefinition)
+    def mergedOtherDemoFields = removeFieldsInConflict(otherDemoFieldDefinitions)
+    def mergedFatherFields = removeFieldsInConflict(fatherFieldDefinitions)
+    def mergedMotherFields = removeFieldsInConflict(motherFieldDefinitions)
 
     nameFields = [ mergedNameFields ]
+    otherNameField = [ mergedOtherNameFields ]
     otherDemoFields = mergedOtherDemoFields.collect { [it] }
     parentFields = [ mergedFatherFields, mergedMotherFields ]
 
     def conflictingFields = []
     conflictedProperties.each { property, lpiMpiValue ->
         def conflictedPair = []
-        def fieldDefinitions = nameFieldDefinitions + otherDemoFieldDefinitions + fatherFieldDefinitions + motherFieldDefinitions
+        def fieldDefinitions = basicNameFieldDefinitions + otherNameFieldDefinition + otherDemoFieldDefinitions + fatherFieldDefinitions + motherFieldDefinitions
         def definition = fieldDefinitions.find { it.id == property }
         if (definition) {
             lpiMpiValue.each { source, value ->
@@ -102,6 +108,7 @@
             conflictingFields.push(conflictedPair)
         }
     }
+    System.out.println(returnUrl)
 %>
 <% if (!conflictingFields.empty) { %>
 <div>
@@ -114,6 +121,9 @@
         <fieldset>
             <legend>Demographics</legend>
             <% nameFields.each { %>
+                ${ui.includeFragment("kenyaui", "widget/rowOfFields", [fields: it])}
+            <% } %>
+            <% otherNameField.each { %>
                 ${ui.includeFragment("kenyaui", "widget/rowOfFields", [fields: it])}
             <% } %>
             <% otherDemoFields.each { %>
@@ -144,8 +154,8 @@
         <% } %>
     </div>
     <div class="ke-panel-footer">
-        <button id="save-button" class="button">Save</button>
-        <button id="cancel-button" class="button">Cancel</button>
+        <button class="save-button" type="submit">Save</button>
+        <button class="cancel-button" type="button">Cancel</button>
     </div>
 </form>
 <script>
@@ -175,6 +185,10 @@
             kenyaui.notifySuccess("Person details saved!");
             window.location = ui.pageLink("kenyareg", "basicHome");
         }
+    });
+
+    jq(".cancel-button").on("click", function() {
+        ui.navigate('${ returnUrl }');
     });
   });
 </script>

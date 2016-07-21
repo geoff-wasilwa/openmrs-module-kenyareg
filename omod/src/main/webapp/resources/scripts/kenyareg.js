@@ -317,7 +317,8 @@ jq(function () {
         } else if ((lpiMatch && mpiMatch) || skipPersonIndex) {
             ui.navigate('kenyareg', 'merge', {
                 lpiUid: (lpiMatch && lpiMatch.personGuid),
-                mpiUid: (mpiMatch && mpiMatch.personGuid)
+                mpiUid: (mpiMatch && mpiMatch.personGuid),
+                returnUrl: location.pathname
             });
         }
     })
@@ -333,7 +334,8 @@ jq(function () {
         } else if (source == 'mpi' && requestResult.mpiResult.successful) {
             ui.navigate('kenyareg', 'merge', {
                 lpiUid: null,
-                mpiUid: null
+                mpiUid: null,
+                returnUrl: location.pathname
             });
         }
     });
