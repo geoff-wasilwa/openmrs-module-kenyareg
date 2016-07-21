@@ -79,8 +79,6 @@ public class RegistryServiceImpl extends BaseOpenmrsService implements RegistryS
 		org.openmrs.Person fromOmrs = personService.getPersonByUuid(fromMpi.getPersonGuid());
 		org.openmrs.Person merged = mergePerson(fromOmrs, fromMpi);
 		Patient patient= (Patient) merged;
-		System.out.println("Check ID and if preferred: "+patient.getPatientIdentifier());
-		System.out.println("Check ID and if preferred: "+patient.getPatientIdentifier().isPreferred());
 
 
 //		if (merged.isPatient()) {
@@ -98,8 +96,6 @@ public class RegistryServiceImpl extends BaseOpenmrsService implements RegistryS
 		}
 		org.openmrs.Person person = mergeService.mergePerson(fromOmrs, fromMpi);
 		Patient patient;
-		System.out.println("The Patient before running= "+person);
-		System.out.println("The Patient before running= "+person.getGivenName());
 		if (fromOmrs.isPatient()) {
 			patient = (Patient)person;
 		} else {
@@ -127,19 +123,13 @@ public class RegistryServiceImpl extends BaseOpenmrsService implements RegistryS
 			//openmrs id exists, check if there is a preferred
 			if(patient.getPatientIdentifier() != null){
 				if (!patient.getPatientIdentifier().isPreferred()) {
+					//not preferred in this case so set the openmrs one
 					patient.getPatientIdentifier(openmrsIdType).setPreferred(true);
 				}
 			}
 
 		}
 		patient.addIdentifier(openmrsId);
-
-		System.out.println("Try out the ID = "+openmrsId);
-		System.out.println("Try out the preferred = "+openmrsId.isPreferred());
-		System.out.println("Try out the ID value = "+openmrsId.getIdentifier());
-		System.out.println("Try out the ID type = "+openmrsId.getIdentifierType().getName());
-		System.out.println("The Patient Name = "+patient.getFamilyName());
-		System.out.println("The Patient ID is preferred = "+patient.getPatientIdentifier().isPreferred());
 		return patient;
 	}
 }
