@@ -95,17 +95,19 @@
                 lpiMpi.initialValue = value
                 def resolveInputName = lpiMpi.formFieldName
                 lpiMpi.formFieldName = "conflict-${source}-${lpiMpi.formFieldName}"
-                lpiMpi.label += " (${source.toUpperCase()})"
-                def resolveInput =
+                lpiMpi.label += " (${source.toUpperCase()})" +
                   "<input name=\'resolve-${resolveInputName}\' data-field-name=\'${lpiMpi.formFieldName}\' type=\'radio\' class=\'resolve\'>"
                 conflictedPair.push(lpiMpi)
-                conflictedPair.push(resolveInput.toString())
             }
             conflictingFields.push(conflictedPair)
         }
     }
 %>
-
+<% if (!conflictingFields.empty) { %>
+<div>
+    <p>NOTE: Some conflicts occurred while trying to merge MPI and LPI person details. Please resolve by selecting the preferred property</p>
+</div>
+<% } %>
 <form id="person-editor-form" method="post" action="${ui.actionLink("kenyareg", "personEditor", "update")}">
     <div class="ke-panel-content">
         <div class="ke-form-globalerrors" style="display: none"></div>
@@ -127,9 +129,17 @@
         <% if (!conflictingFields.empty) { %>
             <fieldset>
                 <legend>Conflicts</legend>
-                <% conflictingFields.each { %>
-                    ${ui.includeFragment("kenyaui", "widget/rowOfFields", [fields: it])}
-                <% } %>
+                <table>
+                    <tbody>
+                    <% conflictingFields.each { conflictingPair -> %>
+                        <tr>
+                        <% conflictingPair.each { field -> %>
+                            <td>${ui.includeFragment("kenyaui", "widget/labeledField", field)}</td>
+                        <% } %>
+                        </tr>
+                    <% } %>
+                    </tbody>
+                </table>
             </fieldset>
         <% } %>
     </div>
