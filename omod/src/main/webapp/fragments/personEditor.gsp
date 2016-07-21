@@ -3,17 +3,35 @@
 
     ui.includeCss("kenyareg", "kenyareg.css")
 
-    def fieldDefinitions = [
+    def initializeFields = { fieldCollection ->
+        fieldCollection.each { field ->
+            def property = mergedProperties.find { key, value ->
+                key == field.id
+            }
+            if (property) {
+                field.initialValue = property.value
+            }
+        }
+    }
+
+    def removeFieldsInConflict = { fieldCollection ->
+        def mergedFields = fieldCollection.findAll { field ->
+            def isInConflict = conflictedProperties.find { key, value ->
+                return field.id == key
+            }
+            return !isInConflict
+        }
+        return mergedFields
+    }
+
+    def nameFieldDefinitions = [
         [ formFieldName: "lastName", label : "Surname", class : java.lang.String, id : "lastName" ],
         [ formFieldName: "firstName", label : "First Name", class : java.lang.String, id : "firstName" ],
         [ formFieldName: "middleName", label : "Middle Name", class : java.lang.String, id : "middleName" ],
         [ formFieldName: "otherName", label : "Other Name(s)", class : java.lang.String, id : "otherName" ],
-        [ formFieldName: "fathersFirstName", label : "Father's First Name", class : java.lang.String, id : "fathersFirstName" ],
-        [ formFieldName: "fathersMiddleName", label : "Father's Middle Name", class : java.lang.String, id : "fathersMiddleName" ],
-        [ formFieldName: "fathersLastName", label : "Father's Last Name", class : java.lang.String, id : "fathersLastName" ],
-        [ formFieldName: "mothersFirstName", label : "Mother's First Name", class : java.lang.String, id : "mothersFirstName" ],
-        [ formFieldName: "mothersMiddleName", label : "Mother's Middle Name", class : java.lang.String, id : "mothersMiddleName" ],
-        [ formFieldName: "mothersLastName", label : "Mother's Last Name", class : java.lang.String, id : "mothersLastName" ],
+    ]
+    
+    def otherDemoFieldDefinitions = [
         [ formFieldName: "birthdate", label : "Birth Date", class : java.util.Date, id : "birthdate" ],
         [ formFieldName: "sex", label : "Sex", class : java.lang.String, id : "sex",
             config : [
@@ -35,29 +53,38 @@
                 ]
             ]
         ],
-        [ formFieldName: "villageName", label : "Village Name", class : java.lang.String, id : "villageName" ]
     ]
 
-    fieldDefinitions.each { definition ->
-        def property = mergedProperties.find { key, value ->
-            key == definition.id
-        }
-        if (property) {
-            definition.initialValue = property.value
-        }
-    }
+    def fatherFieldDefinitions = [
+        [ formFieldName: "fathersFirstName", label : "Father's First Name", class : java.lang.String, id : "fathersFirstName" ],
+        [ formFieldName: "fathersMiddleName", label : "Father's Middle Name", class : java.lang.String, id : "fathersMiddleName" ],
+        [ formFieldName: "fathersLastName", label : "Father's Last Name", class : java.lang.String, id : "fathersLastName" ]
+    ]
 
-    def mergedPersonProperties = fieldDefinitions.findAll { fieldDefinition ->
-        def isInConflict = conflictedProperties.find { key, value ->
-            return fieldDefinition.id == key
-        }
-        return !isInConflict
-    }
-    def mergedFields = mergedPersonProperties.collect { [it] }
+    def motherFieldDefinitions = [
+        [ formFieldName: "mothersFirstName", label : "Mother's First Name", class : java.lang.String, id : "mothersFirstName" ],
+        [ formFieldName: "mothersMiddleName", label : "Mother's Middle Name", class : java.lang.String, id : "mothersMiddleName" ],
+        [ formFieldName: "mothersLastName", label : "Mother's Last Name", class : java.lang.String, id : "mothersLastName" ]
+    ]
+
+    initializeFields(nameFieldDefinitions)
+    initializeFields(otherDemoFieldDefinitions)
+    initializeFields(fatherFieldDefinitions)
+    initializeFields(motherFieldDefinitions)
+    
+    def mergedNameFields = removeFieldsInConflict(nameFieldDefinitions);
+    def mergedOtherDemoFields = removeFieldsInConflict(otherDemoFieldDefinitions);
+    def mergedFatherFields = removeFieldsInConflict(fatherFieldDefinitions);
+    def mergedMotherFields = removeFieldsInConflict(motherFieldDefinitions);
+
+    nameFields = [ mergedNameFields ]
+    otherDemoFields = mergedOtherDemoFields.collect { [it] }
+    parentFields = [ mergedFatherFields, mergedMotherFields ]
 
     def conflictingFields = []
     conflictedProperties.each { property, lpiMpiValue ->
         def conflictedPair = []
+        def fieldDefinitions = nameFieldDefinitions + otherDemoFieldDefinitions + fatherFieldDefinitions + motherFieldDefinitions
         def definition = fieldDefinitions.find { it.id == property }
         if (definition) {
             lpiMpiValue.each { source, value ->
@@ -66,15 +93,15 @@
                     lpiMpi.put(defKey, defValue)
                 }
                 lpiMpi.initialValue = value
-                def resolveInputName = lpiMpi.formFieldName;
+                def resolveInputName = lpiMpi.formFieldName
                 lpiMpi.formFieldName = "conflict-${source}-${lpiMpi.formFieldName}"
-                lpiMpi.label += " (${source})"
+                lpiMpi.label += " (${source.toUpperCase()})"
                 def resolveInput =
                   "<input name=\'resolve-${resolveInputName}\' data-field-name=\'${lpiMpi.formFieldName}\' type=\'radio\' class=\'resolve\'>"
                 conflictedPair.push(lpiMpi)
-                conflictedPair.push(resolveInput.toString());
+                conflictedPair.push(resolveInput.toString())
             }
-            conflictingFields.push(conflictedPair);
+            conflictingFields.push(conflictedPair)
         }
     }
 %>
@@ -83,8 +110,17 @@
     <div class="ke-panel-content">
         <div class="ke-form-globalerrors" style="display: none"></div>
         <fieldset>
-            <legend>Merged</legend>
-            <% mergedFields.each { %>
+            <legend>Demographics</legend>
+            <% nameFields.each { %>
+                ${ui.includeFragment("kenyaui", "widget/rowOfFields", [fields: it])}
+            <% } %>
+            <% otherDemoFields.each { %>
+                ${ui.includeFragment("kenyaui", "widget/rowOfFields", [fields: it])}
+            <% } %>
+        </fieldset>
+        <fieldset>
+            <legend>Parent Information</legend>
+            <% parentFields.each { %>
                 ${ui.includeFragment("kenyaui", "widget/rowOfFields", [fields: it])}
             <% } %>
         </fieldset>
