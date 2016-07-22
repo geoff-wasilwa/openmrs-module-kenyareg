@@ -24,6 +24,34 @@
         return mergedFields
     }
 
+    def getFormattedIdentifierType = { identifierType ->
+        def formatted = '';
+        switch (identifierType) {
+            case 'patientRegistryId':
+                formatted = 'Patient Registry ID';
+                break;
+            case 'masterPatientRegistryId':
+                formatted = 'MPI ID';
+                break;
+            case 'cccUniqueId':
+                formatted = 'UPN';
+                break;
+            case 'cccLocalId':
+                formatted = 'Clinic ID';
+                break;
+            case 'kisumuHdssId':
+                formatted = 'NUPI';
+                break;
+            default:
+                formatted = '';
+        }
+        return formatted;
+    }
+
+    def clinicIdentifier = [ formFieldName: "identifier_cccLocalId", label : "Clinic ID", class : java.lang.String, id : "identifiers.cccLocalId" ]
+
+    def uniquePersonNumber = [ formFieldName: "identifier_cccUniqueId", label : "UPN", class : java.lang.String, id : "identifiers.cccUniqueId" ]
+
     def nameFieldDefinitions = [
         [ formFieldName: "lastName", label : "Surname", class : java.lang.String, id : "lastName" ],
         [ formFieldName: "firstName", label : "First Name", class : java.lang.String, id : "firstName" ],
@@ -107,7 +135,7 @@
     if (mpiUid) { personGuid = mpiUid }
     else if (lpiUid) { personGui = mpiUid }
 %>
-<% if (!conflictingFields.empty) { %>
+<% if (!conflictingFields.empty || conflictingIdentifiers.size() > 0) { %>
 <div>
     <p>NOTE: Some conflicts occurred while trying to merge MPI and LPI person details. Please resolve by selecting the preferred property</p>
 </div>
@@ -116,6 +144,22 @@
     <input type="hidden" name="personGuid" value="${personGuid}" >
     <div class="ke-panel-content">
         <div class="ke-form-globalerrors" style="display: none"></div>
+        <fieldset>
+            <legend>Identifiers</legend>
+            <% if (!mergedIdentifiers.cccLocalId && !conflictingIdentifiers.cccLocalId) { %>
+                ${ui.includeFragment("kenyaui", "widget/labeledField", clinicIdentifier)}
+            <% } %>
+            <% if (!mergedIdentifiers.cccUniqueId && !conflictingIdentifiers.cccUniqueId) { %>
+                ${ui.includeFragment("kenyaui", "widget/labeledField", uniquePersonNumber)}
+            <% } %>
+            <% mergedIdentifiers.each { idType, id -> 
+                def label = getFormattedIdentifierType(idType) %>
+                <p>
+                    ${label}: ${id}
+                    <input type="hidden" name="identifier_${idType}" value="${id}" >
+                </p>
+            <% } %>
+        </fieldset>
         <fieldset>
             <legend>Demographics</legend>
             <% nameFields.each { %>
@@ -131,11 +175,23 @@
                 ${ui.includeFragment("kenyaui", "widget/rowOfFields", [fields: it])}
             <% } %>
         </fieldset>
-        <% if (!conflictingFields.empty) { %>
+        <% if (!conflictingFields.empty || conflictingIdentifiers.size() > 0) { %>
             <fieldset>
                 <legend>Conflicts</legend>
                 <table>
                     <tbody>
+                    <% conflictingIdentifiers.each { idType, conflictingPair ->
+                        def label = getFormattedIdentifierType(idType) %>
+                        <tr>
+                            <% conflictingPair.each { source, value -> %>
+                                <td>
+                                    ${label} (${source.toUpperCase()}): ${value}
+                                    <input type="hidden" name="conflict-${source}-identifier_${idType}" value="${value}">
+                                    <input name="${idType}" data-field-name="conflict-${source}-identifier_${idType}" type="radio" class="resolve">
+                                </td>
+                            <% } %>
+                        </tr>
+                    <% } %>
                     <% conflictingFields.each { conflictingPair -> %>
                         <tr>
                         <% conflictingPair.each { field -> %>
@@ -158,6 +214,7 @@
     jQuery(".resolve").on("change", function(){
       var fieldName = jQuery(this).data("fieldName");
       var resolvedFieldName = fieldName.substring(fieldName.lastIndexOf("-") + 1);
+      console.log(resolvedFieldName);
       console.log(jQuery("input[name=" + resolvedFieldName + "],select[name=" + resolvedFieldName + "]"));
       if (jQuery(this).is(":checked") && fieldName.indexOf("lpi") > 0) {
         var mpiFieldName = fieldName.replace(/lpi/i, "mpi");
