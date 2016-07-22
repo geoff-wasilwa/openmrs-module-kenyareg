@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import ke.go.moh.oec.Person;
 import ke.go.moh.oec.PersonIdentifier;
+import ke.go.moh.oec.PersonIdentifier.Type;
 
 @Service("personMergeService")
 public class PersonMergeService {
@@ -199,5 +200,59 @@ public class PersonMergeService {
 		}
 		return conflictingProperties;
 	}
+	
+	public Map<String, String> getLpiMpiMergedIdentifiers(Person fromLpi, Person fromMpi) {
+		Map<String, String> lpiMpiMergedIdentifiers = new HashMap<String, String>();
+		if (fromLpi != null && fromMpi != null
+				&& fromLpi.getPersonIdentifierList() != null
+				&& fromMpi.getPersonIdentifierList() != null) {
+			if (!fromLpi.getPersonIdentifierList().isEmpty() && !fromMpi.getPersonIdentifierList().isEmpty()) {
+				for (PersonIdentifier lpiIdentifier : fromLpi.getPersonIdentifierList()) {
+					for (PersonIdentifier mpiIdentifier : fromMpi.getPersonIdentifierList()) {
+						if (lpiIdentifier.getIdentifierType().equals(mpiIdentifier.getIdentifierType())) {
+							if (!mpiIdentifier.getIdentifierType().equals(Type.cccLocalId)
+									&& !mpiIdentifier.getIdentifierType().equals(Type.cccUniqueId)) {
+								lpiMpiMergedIdentifiers.put(mpiIdentifier.getIdentifierType().toString(), mpiIdentifier.getIdentifier());
+							} else if (lpiIdentifier.getIdentifier().equalsIgnoreCase(mpiIdentifier.getIdentifier())) {
+								lpiMpiMergedIdentifiers.put(lpiIdentifier.getIdentifierType().toString(), lpiIdentifier.getIdentifier());
+							}
+						}
+					}
+				}
+			}
+		} else if (fromLpi != null && fromLpi.getPersonIdentifierList() != null && !fromLpi.getPersonIdentifierList().isEmpty()) {
+			for (PersonIdentifier lpiIdentifier : fromLpi.getPersonIdentifierList()) {
+				lpiMpiMergedIdentifiers.put(lpiIdentifier.getIdentifierType().toString(), lpiIdentifier.getIdentifier());
+			}
+		} else if (fromMpi != null && fromMpi.getPersonIdentifierList() != null && !fromMpi.getPersonIdentifierList().isEmpty()) {
+			for (PersonIdentifier mpiIdentifier : fromMpi.getPersonIdentifierList()) {
+				lpiMpiMergedIdentifiers.put(mpiIdentifier.getIdentifierType().toString(), mpiIdentifier.getIdentifier());
+			}
+		}
+		return lpiMpiMergedIdentifiers;
+	}
 
+	public Map<String, Map<String, String>> getConflictingIdentifiers(Person fromLpi, Person fromMpi) {
+		if ((fromLpi == null && fromMpi == null)
+				|| (fromLpi.getPersonIdentifierList().isEmpty() && fromMpi.getPersonIdentifierList().isEmpty())) {
+			return Collections.emptyMap();
+		}
+		Map<String, Map<String, String>> conflictingIdentifiers = new HashMap<String, Map<String,String>>();
+		for (PersonIdentifier lpiIdentifier : fromLpi.getPersonIdentifierList()) {
+			if (!lpiIdentifier.getIdentifierType().equals(Type.cccLocalId)
+					|| !lpiIdentifier.getIdentifierType().equals(Type.cccUniqueId)) {
+				continue;
+			}
+			for (PersonIdentifier mpiIdentifier : fromMpi.getPersonIdentifierList()) {
+				if (lpiIdentifier.getIdentifierType().equals(mpiIdentifier.getIdentifierType())
+						&& lpiIdentifier.getIdentifier() != mpiIdentifier.getIdentifier()) {
+					Map<String, String> conflictingIdentifierPair = new HashMap<String, String>();
+					conflictingIdentifierPair.put("lpi", lpiIdentifier.getIdentifier());
+					conflictingIdentifierPair.put("mpi", mpiIdentifier.getIdentifier());
+					conflictingIdentifiers.put(lpiIdentifier.getIdentifierType().toString(), conflictingIdentifierPair);
+				}
+			}
+		}
+		return conflictingIdentifiers;
+	}
 }

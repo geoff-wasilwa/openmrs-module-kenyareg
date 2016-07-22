@@ -173,6 +173,7 @@ jq(function () {
     function showIdentifierDetails(person) {
         var personIdList = person.personIdentifierList;
         if (personIdList) {
+            jq(".unique-identifiers").empty();
             for (var j = 0; j < personIdList.length; j++) {
                 var personId = personIdList[j];
                 jq(".unique-identifiers")

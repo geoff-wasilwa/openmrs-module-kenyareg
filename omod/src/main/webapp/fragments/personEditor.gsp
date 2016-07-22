@@ -24,6 +24,34 @@
         return mergedFields
     }
 
+    def getFormattedIdentifierType = { identifierType ->
+        def formatted = '';
+        switch (identifierType) {
+            case 'patientRegistryId':
+                formatted = 'Patient Registry ID';
+                break;
+            case 'masterPatientRegistryId':
+                formatted = 'MPI ID';
+                break;
+            case 'cccUniqueId':
+                formatted = 'UPN';
+                break;
+            case 'cccLocalId':
+                formatted = 'Clinic ID';
+                break;
+            case 'kisumuHdssId':
+                formatted = 'NUPI';
+                break;
+            default:
+                formatted = '';
+        }
+        return formatted;
+    }
+
+    def clinicIdentifier = [ formFieldName: "identifier.cccLocalId", label : "Clinic ID", class : java.lang.String, id : "identifiers.cccLocalId" ]
+
+    def uniquePersonNumber = [ formFieldName: "identifier.cccUniqueId", label : "UPN", class : java.lang.String, id : "identifiers.cccUniqueId" ]
+
     def nameFieldDefinitions = [
         [ formFieldName: "lastName", label : "Surname", class : java.lang.String, id : "lastName" ],
         [ formFieldName: "firstName", label : "First Name", class : java.lang.String, id : "firstName" ],
@@ -117,6 +145,22 @@
     <div class="ke-panel-content">
         <div class="ke-form-globalerrors" style="display: none"></div>
         <fieldset>
+            <legend>Identifiers</legend>
+            <% if (!mergedIdentifiers.cccLocalId && !conflictingIdentifiers.cccLocalId) { %>
+                ${ui.includeFragment("kenyaui", "widget/labeledField", clinicIdentifier)}
+            <% } %>
+            <% if (!mergedIdentifiers.cccUniqueId && !conflictingIdentifiers.cccUniqueId) { %>
+                ${ui.includeFragment("kenyaui", "widget/labeledField", uniquePersonNumber)}
+            <% } %>
+            <% mergedIdentifiers.each { idType, id -> 
+                def label = getFormattedIdentifierType(idType) %>
+                <p>
+                    ${label}: ${id}
+                    <input type="hidden" name="identifier.${idType}" value="${id}" >
+                </p>
+            <% } %>
+        </fieldset>
+        <fieldset>
             <legend>Demographics</legend>
             <% nameFields.each { %>
                 ${ui.includeFragment("kenyaui", "widget/rowOfFields", [fields: it])}
@@ -131,11 +175,23 @@
                 ${ui.includeFragment("kenyaui", "widget/rowOfFields", [fields: it])}
             <% } %>
         </fieldset>
-        <% if (!conflictingFields.empty) { %>
+        <% if (!conflictingFields.empty || !conflictingIdentifiers.size() == 0) { %>
             <fieldset>
                 <legend>Conflicts</legend>
                 <table>
                     <tbody>
+                    <% conflictingIdentifiers.each { idType, conflictingPair ->
+                        def label = getFormattedIdentifierType(idType) %>
+                        <tr>
+                            <% conflictingPair.each { source, value -> %>
+                                <td>
+                                    ${label} (${source.toUpperCase()}): ${value}
+                                    <input type="hidden" name="conflicting-${source}-identifier.${idType}" value="${value}">
+                                    <input data-field-name="conflicting-${source}-${idType}" type="radio" class="resolve">
+                                </td>
+                            <% } %>
+                        </tr>
+                    <% } %>
                     <% conflictingFields.each { conflictingPair -> %>
                         <tr>
                         <% conflictingPair.each { field -> %>
