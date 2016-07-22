@@ -102,6 +102,10 @@
             conflictingFields.push(conflictedPair)
         }
     }
+
+    def personGuid = "";
+    if (mpiUid) { personGuid = mpiUid }
+    else if (lpiUid) { personGui = mpiUid }
 %>
 <% if (!conflictingFields.empty) { %>
 <div>
@@ -109,6 +113,7 @@
 </div>
 <% } %>
 <form id="person-editor-form" method="post" action="${ui.actionLink("kenyareg", "personEditor", "update")}">
+    <input type="hidden" name="personGuid" value="${personGuid}" >
     <div class="ke-panel-content">
         <div class="ke-form-globalerrors" style="display: none"></div>
         <fieldset>
@@ -173,7 +178,7 @@
     kenyaui.setupAjaxPost('person-editor-form', {
         onSuccess: function (data) {
             kenyaui.notifySuccess("Person details saved!");
-            window.location = ui.pageLink("kenyareg", "basicHome");
+            ui.navigate("kenyaemr/registration", "registrationViewPatient", { "patientId": data.patientId });
         }
     });
   });

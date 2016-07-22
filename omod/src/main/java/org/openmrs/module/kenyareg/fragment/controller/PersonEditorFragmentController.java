@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.go2itech.oecui.data.RequestResult;
+import org.openmrs.Patient;
 import org.openmrs.module.kenyareg.api.PersonMergeService;
 import org.openmrs.module.kenyareg.api.RegistryService;
+import org.openmrs.ui.framework.SimpleObject;
 import org.openmrs.ui.framework.UiUtils;
 import org.openmrs.ui.framework.annotation.BindParams;
 import org.openmrs.ui.framework.annotation.SpringBean;
@@ -14,7 +16,7 @@ import org.openmrs.ui.framework.fragment.FragmentConfiguration;
 import org.openmrs.ui.framework.fragment.FragmentModel;
 import org.openmrs.ui.framework.fragment.action.FailureResult;
 import org.openmrs.ui.framework.fragment.action.FragmentActionResult;
-import org.openmrs.ui.framework.fragment.action.SuccessResult;
+import org.openmrs.ui.framework.fragment.action.ObjectResult;
 import org.openmrs.ui.framework.session.Session;
 
 import ke.go.moh.oec.Person;
@@ -54,6 +56,8 @@ public class PersonEditorFragmentController {
 		}
 		session.setAttribute("lpiMatch", fromLpi);
 		session.setAttribute("mpiMatch", fromMpi);
+		model.addAttribute("lpiUid", fromLpi.getPersonGuid());
+		model.addAttribute("mpiUid", fromMpi.getPersonGuid());
 		model.addAttribute("mergedProperties", mergeService.getLpiMpiMergedProperties(fromLpi, fromMpi));
 		model.addAttribute("conflictedProperties", mergeService.getLpiMpiConflictingProperties(fromLpi, fromMpi));
 
@@ -83,8 +87,8 @@ public class PersonEditorFragmentController {
 		if (request.hasErrors()) {
 			return new FailureResult(request.getErrors());
 		}
-		registryService.acceptPerson(person);
-		return new SuccessResult("Person details uptdated");
+		Patient patient = registryService.acceptPerson(person);
+		return new ObjectResult(SimpleObject.create("patientId", patient.getId()));
 	}
 
 	public void pollPersonIndex(Session session) {
