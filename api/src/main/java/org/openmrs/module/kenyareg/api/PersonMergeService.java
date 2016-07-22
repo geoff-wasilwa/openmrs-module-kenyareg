@@ -240,7 +240,7 @@ public class PersonMergeService {
 		Map<String, Map<String, String>> conflictingIdentifiers = new HashMap<String, Map<String,String>>();
 		for (PersonIdentifier lpiIdentifier : fromLpi.getPersonIdentifierList()) {
 			if (!lpiIdentifier.getIdentifierType().equals(Type.cccLocalId)
-					|| !lpiIdentifier.getIdentifierType().equals(Type.cccUniqueId)) {
+					&& !lpiIdentifier.getIdentifierType().equals(Type.cccUniqueId)) {
 				continue;
 			}
 			for (PersonIdentifier mpiIdentifier : fromMpi.getPersonIdentifierList()) {

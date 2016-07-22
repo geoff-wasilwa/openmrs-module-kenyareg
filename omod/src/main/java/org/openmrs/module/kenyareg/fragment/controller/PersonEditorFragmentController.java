@@ -51,7 +51,7 @@ public class PersonEditorFragmentController {
 		if (config.containsKey("mpiUid")) {
 			String uuid = config.get("mpiUid").toString();
 			@SuppressWarnings("unchecked")
-			List<Person> mpiPersonList = (List<Person>) session.getAttribute("lpiResult", RequestResult.class).getData();
+			List<Person> mpiPersonList = (List<Person>) session.getAttribute("mpiResult", RequestResult.class).getData();
 			for (Person person : mpiPersonList) {
 				if (person.getPersonGuid().equals(uuid)) {
 					fromMpi = person;
@@ -98,8 +98,8 @@ public class PersonEditorFragmentController {
 		Enumeration keys = request.getHttpRequest().getParameterNames();
 		while (keys.hasMoreElements()) {
 			String key = (String)keys.nextElement();
-			if (StringUtils.contains(key, "identifier")) {
-				String identifierType = StringUtils.remove(key, "identifier.");
+			if (StringUtils.contains(key, "identifier") && !StringUtils.contains(key, "conflict")) {
+				String identifierType = StringUtils.remove(key, "identifier_");
 				String identifierValue = request.getParameter(key);
 				if (StringUtils.isNotBlank(identifierValue)) {
 					PersonIdentifier personIdentifier = new PersonIdentifier();
@@ -119,7 +119,7 @@ public class PersonEditorFragmentController {
 			String identifierType = conflictingPairEntry.getKey();
 			boolean found = true;
 			for (Map.Entry<String, String> conflictingPair : conflictingPairEntry.getValue().entrySet()) {
-				String requestParameterName = "conflict-" + conflictingPair.getKey() + "-identifier." + identifierType;
+				String requestParameterName = "conflict-" + conflictingPair.getKey() + "-identifier_" + identifierType;
 				String value = request.getParameter(requestParameterName);
 				found = found && (value != null);
 			}
