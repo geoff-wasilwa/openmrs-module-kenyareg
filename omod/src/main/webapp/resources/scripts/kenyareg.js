@@ -47,11 +47,16 @@ jq(function () {
      */
     var skipPersonIndex = false;
 
+    jq(".search").on("click", function(){
+    	kenyaui.openLoadingDialog({message: "Searching..."});
+    });
+
     /**
      * Sets up the basic/advanced search form to be submitted via AJAX.
      */
     kenyaui.setupAjaxPost('search-form', {
         onSuccess: function (data) {
+            kenyaui.closeDialog();
             requestResult = data;
             if (!lpiMatch && data.lpiResult.successful) {
                 showResultBySource('lpi');
