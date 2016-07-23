@@ -1,10 +1,8 @@
 package org.openmrs.module.kenyareg.fragment.controller;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-
+import ke.go.moh.oec.Person;
+import ke.go.moh.oec.PersonIdentifier;
+import ke.go.moh.oec.PersonIdentifier.Type;
 import org.apache.commons.lang.StringUtils;
 import org.go2itech.oecui.data.RequestResult;
 import org.openmrs.Patient;
@@ -21,31 +19,31 @@ import org.openmrs.ui.framework.fragment.action.FailureResult;
 import org.openmrs.ui.framework.fragment.action.FragmentActionResult;
 import org.openmrs.ui.framework.fragment.action.ObjectResult;
 import org.openmrs.ui.framework.session.Session;
-
-import ke.go.moh.oec.Person;
-import ke.go.moh.oec.PersonIdentifier;
-import ke.go.moh.oec.PersonIdentifier.Type;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
 
 public class PersonEditorFragmentController {
 
-	public void controller(
-			@SpringBean("personMergeService") PersonMergeService mergeService,
-			FragmentConfiguration config,
-			FragmentModel model,
-			Session session
-		) {
-		Person fromLpi = new Person();
-		if (config.containsKey("lpiUid")) {
-			String uuid = config.get("lpiUid").toString();
-			@SuppressWarnings("unchecked")
-			List<Person> lpiPersonList = (List<Person>) session.getAttribute("lpiResult", RequestResult.class).getData();
-			for (Person person : lpiPersonList) {
-				if (person.getPersonGuid().equals(uuid)) {
-					fromLpi = person;
-					break;
-				}
-			}
-		}
+    public void controller(
+            @SpringBean("personMergeService") PersonMergeService mergeService,
+            FragmentConfiguration config,
+            FragmentModel model,
+            Session session
+    ) {
+        Person fromLpi = new Person();
+        if (config.containsKey("lpiUid")) {
+            String uuid = config.get("lpiUid").toString();
+            @SuppressWarnings("unchecked")
+            List<Person> lpiPersonList = (List<Person>) session.getAttribute("lpiResult", RequestResult.class).getData();
+            for (Person person : lpiPersonList) {
+                if (person.getPersonGuid().equals(uuid)) {
+                    fromLpi = person;
+                    break;
+                }
+            }
+        }
 
 		Person fromMpi = new Person();
 		if (config.containsKey("mpiUid")) {
@@ -68,8 +66,7 @@ public class PersonEditorFragmentController {
 		model.addAttribute("mergedProperties", mergeService.getLpiMpiMergedProperties(fromLpi, fromMpi));
 		model.addAttribute("conflictedProperties", mergeService.getLpiMpiConflictingProperties(fromLpi, fromMpi));
 
-	}
-
+    }
 	public FragmentActionResult update(
 			@SpringBean("personMergeService") PersonMergeService mergeService,
 			@SpringBean("registryService") RegistryService registryService,
@@ -86,10 +83,9 @@ public class PersonEditorFragmentController {
 		
 		List<PersonIdentifier> personIdentifiers = getPersonIdentifiers(request);
 		person.setPersonIdentifierList(personIdentifiers);
-		boolean isFromLpi = (lpiMatch != null);
-		boolean isFromMpi = (mpiMatch != null);
-		registryService.acceptPerson(person);
-		Patient patient = registryService.acceptPerson(person);
+		boolean lpiMatched = (lpiMatch != null);
+		boolean mpiMatched = (mpiMatch != null);
+		Patient patient = registryService.acceptPerson(person,lpiMatched,mpiMatched);
 		return new ObjectResult(SimpleObject.create("patientId", patient.getId()));
 	}
 
@@ -146,3 +142,4 @@ public class PersonEditorFragmentController {
 		}
 	}
 }
+
