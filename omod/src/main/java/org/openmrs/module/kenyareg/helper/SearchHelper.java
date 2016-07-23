@@ -11,7 +11,8 @@ import org.openmrs.ui.framework.session.Session;
 import org.springframework.stereotype.Component;
 
 /**
- * Created by gitahi on 20/07/16.
+ * @author gitahi
+ * Created on 20/07/16.
  */
 @Component
 public class SearchHelper {
