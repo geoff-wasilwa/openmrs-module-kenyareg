@@ -1,19 +1,17 @@
 package org.openmrs.module.kenyareg.api;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.openmrs.Location;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.PersonName;
 import org.openmrs.api.PatientService;
+import org.openmrs.module.kenyareg.api.utils.OpenmrsPersonToOecPersonConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,22 +44,25 @@ public class PersonMergeService {
         assert patient != null;
         assert identifiers != null;
         for (PersonIdentifier identifier : identifiers) {
-            if (matchesIdentifierInOmrs(identifier.getIdentifierType().toString())) {
-                updateOmrsIdentifier(patient, identifier.getIdentifier(), identifier.getIdentifierType().toString(), location);
+            String typeName = identifier.getIdentifierType().name();
+            OpenmrsPersonToOecPersonConverter.OpenmrsIdentifierTypeConverter openmrsIdentifierTypeConverter =
+                    OpenmrsPersonToOecPersonConverter.OpenmrsIdentifierTypeConverter.valueOf(typeName);
+            String typeString = openmrsIdentifierTypeConverter.getTypeString();
+            if (matchesIdentifierInOmrs(typeString)) {
+                updateOmrsIdentifier(patient, identifier.getIdentifier(), typeString, location);
             }
         }
     }
 
     private boolean matchesIdentifierInOmrs(String identifierName) {
         List<PatientIdentifierType> availableOmrsIdentifierTypes = patientService.getAllPatientIdentifierTypes();
-
-        for (PatientIdentifierType identifierType : availableOmrsIdentifierTypes) {
-            if (identifierType.getName().equalsIgnoreCase(identifierName)) {
-                return true;
-            }
+        List<String> idString = new ArrayList<String>();
+        for (PatientIdentifierType pi : availableOmrsIdentifierTypes) {
+            idString.add(pi.getName());
         }
-        return false;
+        return idString.contains(identifierName);
     }
+
 
     private void updateOmrsIdentifier(Patient omrsPerson, String identifier, String identifierType, Location location) {
         PatientIdentifierType patientIdentifierType = patientService.getPatientIdentifierTypeByName(identifierType);
@@ -263,4 +264,5 @@ public class PersonMergeService {
 
 
     }
+
 }
