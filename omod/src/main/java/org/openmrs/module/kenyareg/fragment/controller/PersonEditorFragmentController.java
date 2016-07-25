@@ -26,27 +26,27 @@ import java.util.Map;
 
 public class PersonEditorFragmentController {
 
-    public void controller(
-            @SpringBean("personMergeService") PersonMergeService mergeService,
-            FragmentConfiguration config,
-            FragmentModel model,
-            Session session
-    ) {
-        Person fromLpi = new Person();
-        if (config.containsKey("lpiUid")) {
-            String uuid = config.get("lpiUid").toString();
-            @SuppressWarnings("unchecked")
-            List<Person> lpiPersonList = (List<Person>) session.getAttribute("lpiResult", RequestResult.class).getData();
-            for (Person person : lpiPersonList) {
-                if (person.getPersonGuid().equals(uuid)) {
-                    fromLpi = person;
-                    break;
-                }
-            }
-        }
+	public void controller(
+			@SpringBean("personMergeService") PersonMergeService mergeService,
+			FragmentConfiguration config,
+			FragmentModel model,
+			Session session
+		) {
+		Person fromLpi = new Person();
+		if (config.containsKey("lpiUid") && StringUtils.isNotBlank(config.get("lpiUid").toString())) {
+			String uuid = config.get("lpiUid").toString();
+			@SuppressWarnings("unchecked")
+			List<Person> lpiPersonList = (List<Person>) session.getAttribute("lpiResult", RequestResult.class).getData();
+			for (Person person : lpiPersonList) {
+				if (person.getPersonGuid().equals(uuid)) {
+					fromLpi = person;
+					break;
+				}
+			}
+		}
 
 		Person fromMpi = new Person();
-		if (config.containsKey("mpiUid")) {
+		if (config.containsKey("mpiUid") && StringUtils.isNotBlank(config.get("mpiUid").toString())) {
 			String uuid = config.get("mpiUid").toString();
 			@SuppressWarnings("unchecked")
 			List<Person> mpiPersonList = (List<Person>) session.getAttribute("mpiResult", RequestResult.class).getData();
