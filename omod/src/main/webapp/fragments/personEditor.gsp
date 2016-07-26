@@ -9,7 +9,11 @@
                 key == field.id
             }
             if (property) {
-                field.initialValue = property.value
+                if (field.config?.options) {
+                    field.initialValue = property.value.toString()
+                } else {
+                    field.initialValue = property.value
+                }
             }
         }
     }
