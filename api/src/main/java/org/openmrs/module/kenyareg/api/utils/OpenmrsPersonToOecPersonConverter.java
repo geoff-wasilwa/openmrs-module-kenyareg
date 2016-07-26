@@ -58,11 +58,11 @@ public class OpenmrsPersonToOecPersonConverter {
 
     private static String getMatchedOecIdentifierType(String identifierType){
         String matched=null;
-        for (OpenmrsTypeConverter s : OpenmrsTypeConverter.values()) {
+        for (OpenmrsIdentifierTypeConverter s : OpenmrsIdentifierTypeConverter.values()) {
             if (s.getTypeString().equalsIgnoreCase(identifierType)) {
                 /*
                 An identifier type has been found in openmrs that matches a possible oec identifier type
-                This is only true as long as Identifier Strings do not change as they have been hard coded in @link OpenmrsTypeConverter
+                This is only true as long as Identifier Strings do not change as they have been hard coded in @link OpenmrsIdentifierTypeConverter
                  */
                 System.out.printf("Found a match at : %s == %s for identifier type : %s \n", s.getTypeString(), identifierType,s.name());
                 matched = s.name();
@@ -90,14 +90,14 @@ public class OpenmrsPersonToOecPersonConverter {
         }
     }
 
-    public enum OpenmrsTypeConverter {
+    public enum OpenmrsIdentifierTypeConverter {
         openMRSIdentificationNumber("OpenMRS Identification Number"),
         oldIdentificationNumber("Old Identification Number"),
         openMRSID("OpenMRS ID"),
         nationalID("National ID"),
         heiIdNumber("HEI ID Number"),
         districtRegistrationNumber("District Registration Number"),
-        patientRegistryId("Patient Redistry ID"),
+        patientRegistryId("Patient Registry ID"),
         masterPatientRegistryId("Master Patient Registry ID"),
         cccUniqueId("Unique Patient Number"),
         cccLocalId("Patient Clinic Number"),
@@ -109,7 +109,7 @@ public class OpenmrsPersonToOecPersonConverter {
             return typeString;
         }
 
-        private OpenmrsTypeConverter(String typeString) {
+        private OpenmrsIdentifierTypeConverter(String typeString) {
             this.typeString = typeString;
         }
     }

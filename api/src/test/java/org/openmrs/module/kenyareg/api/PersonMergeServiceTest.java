@@ -1,14 +1,9 @@
 package org.openmrs.module.kenyareg.api;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
+import ke.go.moh.oec.Person;
+import ke.go.moh.oec.Person.Sex;
+import ke.go.moh.oec.PersonIdentifier;
+import ke.go.moh.oec.PersonIdentifier.Type;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,10 +19,9 @@ import org.openmrs.PatientIdentifierType;
 import org.openmrs.PersonName;
 import org.openmrs.api.PatientService;
 
-import ke.go.moh.oec.Person;
-import ke.go.moh.oec.Person.Sex;
-import ke.go.moh.oec.PersonIdentifier;
-import ke.go.moh.oec.PersonIdentifier.Type;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PersonMergeServiceTest {
@@ -190,13 +184,13 @@ public class PersonMergeServiceTest {
 
 	private PatientIdentifierType getCccLocalIdentifier() {
 		PatientIdentifierType cccLocalId = new PatientIdentifierType();
-		cccLocalId.setName(Type.cccLocalId.toString());
+		cccLocalId.setName("Patient Clinic Number");
 		return cccLocalId;
 	}
 
 	private PatientIdentifierType getCccUniqueIdentifier() {
 		PatientIdentifierType cccUniqueId = new PatientIdentifierType();
-		cccUniqueId.setName(Type.cccUniqueId.toString());
+		cccUniqueId.setName("Unique Patient Number");
 		return cccUniqueId;
 	}
 
