@@ -23,25 +23,30 @@
 
     def formFieldName = "identifierTypeId";
     def options = [
-
             [
-                    value: "1",
-                    label: "NUPI"
+                    value: "10",
+                    label: "Tel No"
             ],
             [
-                    value: "2",
-                    label: "CCC UPN"
+                    value: "8",
+                    label: "National ID"
+            ],
+            [
+                    value: "11",
+                    label: "Parent Tel No"
             ],
             [
                     value: "3",
-                    label: "MPI"
+                    label: "Clinic No"
             ],
             [
-                    value: "4",
-                    label: "CCC LPN"
+                    value: "3",
+                    label: "CCC UPN"
+            ],
+            [
+                    value: "50",
+                    label: "NUPI"
             ]
-
-
     ]
 
 %>

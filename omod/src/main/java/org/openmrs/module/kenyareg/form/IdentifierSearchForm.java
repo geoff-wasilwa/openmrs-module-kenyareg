@@ -72,6 +72,22 @@ public class IdentifierSearchForm extends ValidatingCommandObject implements Sea
                 pi.setIdentifierType(PersonIdentifier.Type.cccLocalId);
                 break;
             }
+            case 50: {
+                pi.setIdentifierType(PersonIdentifier.Type.nupi);
+                break;
+            }
+            case 10: {
+                pi.setIdentifierType(PersonIdentifier.Type.telNo);
+                break;
+            }
+            case 8: {
+                pi.setIdentifierType(PersonIdentifier.Type.nationalId);
+                break;
+            }
+            case 11: {
+                pi.setIdentifierType(PersonIdentifier.Type.parentTelNo);
+                break;
+            }
             default: {
                 pi.setIdentifierType(PersonIdentifier.Type.patientRegistryId);
                 break;
