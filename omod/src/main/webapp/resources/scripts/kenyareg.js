@@ -3,8 +3,9 @@ jq(function () {
     /**
      * Pre-fill basic search form with test data.
      */
-    jq('#surname').val("Kamau");
-    jq('#firstName').val("Rose");
+    jq('#surname').val("ADHIAMBO");
+    jq('#firstName').val("PERES");
+    jq('#middleName').val("MAJIWA");
 
 
     /**
@@ -42,13 +43,8 @@ jq(function () {
      */
     var source = null;
 
-    /**
-     * Sets up the basic search form to be submitted via AJAX.
-     */
-    var skipPersonIndex = false;
-
-    jq(".search").on("click", function(){
-    	kenyaui.openLoadingDialog({message: "Searching..."});
+    jq(".search").on("click", function () {
+        kenyaui.openLoadingDialog({message: "Searching..."});
     });
 
     /**
@@ -58,27 +54,20 @@ jq(function () {
         onSuccess: function (data) {
             kenyaui.closeDialog();
             requestResult = data;
-            if (!lpiMatch && data.lpiResult.successful) {
-                showResultBySource('lpi');
-                showDetails(0, 'lpi');
-            } else if (!mpiMatch && data.mpiResult.successful) {
-                showResultBySource('mpi');
-                showDetails(0, 'mpi');
-            } else if (!lpiMatch && !data.lpiResult.successful) {
-                showRetryDialog("The LPI could not be contacted. Retry?", 3);
-            } else if (!mpiMatch && !data.mpiResult.successful) {
-                showRetryDialog("The MPI could not be contacted. Retry?", 2);
-            } else {
-                kenyaui.openConfirmDialog(
-                    {
-                        "message": "Neither the LPI nor the MPI could be contacted. Retry?",
-                        "okLabel": "Yes",
-                        "cancelLabel": "No",
-                        "okCallback": function () {
-                            jq("#basic-search-form").submit();
-                        }
-                    }
-                );
+            if (!lpiMatch) {
+                if (data.lpiResult.successful) {
+                    showResultBySource('lpi');
+                    showDetails(0, 'lpi');
+                } else {
+                    showFailure('lpi');
+                }
+            } else if (!mpiMatch) {
+                if (data.mpiResult.successful) {
+                    showResultBySource('mpi');
+                    showDetails(0, 'mpi');
+                } else {
+                    showFailure('mpi');
+                }
             }
         }
     });
@@ -90,7 +79,7 @@ jq(function () {
     })
 
     jq('#person-index-results-table').on('click', 'tr', function (e) {
-        showDetails(this.rowIndex - 1, source);
+        showDetails(this.rowIndex, source);
     });
 
     function showResults() {
@@ -108,7 +97,9 @@ jq(function () {
             list = requestResult.mpiResult;
         }
         jq('#person-index-results-table > tbody').html("");
-        if (list.data.length == 0) {
+        if (!list.data) {
+            showFailure(src);
+        } else if (list.data.length == 0) {
             showEmpty();
         } else {
             for (var i = 0; i < list.data.length; i++) {
@@ -117,11 +108,28 @@ jq(function () {
         }
     }
 
-    function showEmpty() {
+    /**
+     * Indicate that a connection failure occurred and that the LPI/MPI was not reached.
+     */
+    function showFailure(src) {
+        source = src
         var id = '#person-index-results-table';
+        jq(id).empty();
         jq(id).append(
             '<tr>' +
-            '<td colspan="6" style="text-align:center;">Nothing to show</td>' +
+            '<td colspan="6" style="text-align:center; color: red">Not contacted</td>' +
+            '</tr>');
+    }
+
+    /**
+     * Indicate that the LPI/MPI was reached but returned empty results.
+     */
+    function showEmpty() {
+        var id = '#person-index-results-table';
+        jq(id).empty();
+        jq(id).append(
+            '<tr>' +
+            '<td colspan="6" style="text-align:center;">No results</td>' +
             '</tr>');
     }
 
@@ -156,24 +164,22 @@ jq(function () {
             mpiMatch = requestResult.mpiResult.data[i];
             selected = mpiMatch;
         }
-        if (selected) {
-            jq(".detail").show('slow');
-            showMatchScore(selected)
-            showIdentifierDetails(selected);
-            showBasicDetails(selected);
-            showStatusDetails(selected);
-            showParentDetails(selected);
-        }
+        jq(".detail").show('slow');
+        showMatchScore(selected)
+        showIdentifierDetails(selected);
+        showBasicDetails(selected);
+        showStatusDetails(selected);
+        showParentDetails(selected);
     }
 
     function showMatchScore(person, source) {
-        jq("div.detail .ke-panel-heading").html("Details (Match Score: " + replaceNull(person.matchScore) + ")")
+        jq("div.detail .ke-panel-heading").html("Details (Match Score: " + replaceNull(person ? person.matchScore : '') + ")")
     }
 
     function showIdentifierDetails(person) {
-        var personIdList = person.personIdentifierList;
+        var personIdList = person ? person.personIdentifierList : null;
+        jq(".unique-identifiers").empty();
         if (personIdList) {
-            jq(".unique-identifiers").empty();
             for (var j = 0; j < personIdList.length; j++) {
                 var personId = personIdList[j];
                 jq(".unique-identifiers")
@@ -187,26 +193,26 @@ jq(function () {
     }
 
     function showBasicDetails(person) {
-        jq('.first-name').html(replaceNull(person.firstName));
-        jq('.middle-name').html(replaceNull(person.middleName));
-        jq('.last-name').html(replaceNull(person.lastName));
-        jq('.birth-date').html(replaceNull(formatDate(person.birthdate)));
-        jq('.sex').html(replaceNull(person.sex));
+        jq('.first-name').html(replaceNull(person ? person.firstName : ''));
+        jq('.middle-name').html(replaceNull(person ? person.middleName : ''));
+        jq('.last-name').html(replaceNull(person ? person.lastName : ''));
+        jq('.birth-date').html(replaceNull(formatDate(person ? person.birthdate : '')));
+        jq('.sex').html(replaceNull(person ? person.sex : ''));
     }
 
     function showStatusDetails(person) {
-        jq('.alive-status').html(replaceNull(person.aliveStatus));
-        jq('.marital-status').html(replaceNull(formatMaritalStatus(person.maritalStatus)));
-        jq('.last-visit-date').html(replaceNull(person.lastRegularVisit));
+        jq('.alive-status').html(replaceNull(person ? person.aliveStatus : ''));
+        jq('.marital-status').html(replaceNull(formatMaritalStatus(person ? person.maritalStatus : '')));
+        jq('.last-visit-date').html(replaceNull(person ? person.lastRegularVisit : ''));
     }
 
     function showParentDetails(person) {
-        jq('.father-first-name').html(replaceNull(person.fathersFirstName));
-        jq('.father-middle-name').html(replaceNull(person.fathersMiddleName));
-        jq('.father-last-name').html(replaceNull(person.fathersLastName));
-        jq('.mother-first-name').html(replaceNull(person.mothersFirstName));
-        jq('.mother-middle-name').html(replaceNull(person.mothersMiddleName));
-        jq('.mother-last-name').html(replaceNull(person.mothersLastName));
+        jq('.father-first-name').html(replaceNull(person ? person.fathersFirstName : ''));
+        jq('.father-middle-name').html(replaceNull(person ? person.fathersMiddleName : ''));
+        jq('.father-last-name').html(replaceNull(person ? person.fathersLastName : ''));
+        jq('.mother-first-name').html(replaceNull(person ? person.mothersFirstName : ''));
+        jq('.mother-middle-name').html(replaceNull(person ? person.mothersMiddleName : ''));
+        jq('.mother-last-name').html(replaceNull(person ? person.mothersLastName : ''));
     }
 
     function formatMaritalStatus(status) {
@@ -255,7 +261,16 @@ jq(function () {
                     formatted = 'Clinic ID';
                     break;
                 case 'kisumuHdssId':
+                    formatted = 'Kisumu HDSS ID';
+                    break;
+                case 'nupi':
                     formatted = 'NUPI';
+                    break;
+                case 'telNo':
+                    formatted = 'Tel No';
+                    break;
+                case 'parentTelNo':
+                    formatted = 'Parent Tel No';
                     break;
                 default:
                     formatted = '';
@@ -308,19 +323,19 @@ jq(function () {
     }
 
     jq('#accept-button').click(function () {
-        if (lpiMatch && !mpiMatch && requestResult.mpiResult.successful) {
-            showResultBySource('mpi');
-            showDetails(0, 'mpi');
-            jq("html, body").animate({scrollTop: 0}, "slow");
-        } else if (mpiMatch && !lpiMatch && requestResult.lpiResult.successful) {
-            showResultBySource('lpi');
-            showDetails(0, 'lpi');
-            jq("html, body").animate({scrollTop: 0}, "slow");
-        } else if (!lpiMatch && !requestResult.lpiResult.successful && !skipPersonIndex) {
-            showRetryDialog("The LPI could not be contacted. Retry?", 3);
-        } else if (!mpiMatch && !requestResult.mpiResult.successful && !skipPersonIndex) {
-            showRetryDialog("The MPI could not be contacted. Retry?", 2);
-        } else if ((lpiMatch && mpiMatch) || skipPersonIndex) {
+
+        if (source == 'lpi') {
+            if (!mpiMatch) {
+                showResultBySource('mpi');
+                showDetails(0, 'mpi');
+                jq("html, body").animate({scrollTop: 0}, "slow");
+            } else {
+                ui.navigate('kenyareg', 'merge', {
+                    lpiUid: (lpiMatch && lpiMatch.personGuid),
+                    mpiUid: (mpiMatch && mpiMatch.personGuid)
+                });
+            }
+        } else if (source == 'mpi') {
             ui.navigate('kenyareg', 'merge', {
                 lpiUid: (lpiMatch && lpiMatch.personGuid),
                 mpiUid: (mpiMatch && mpiMatch.personGuid)
@@ -332,15 +347,28 @@ jq(function () {
      * If LPI results are rejected show MPI results. If MPI results are rejected also go create a new patient.
      */
     jq('#reject-button').on("click", function (event) {
-        if (source == 'lpi' && requestResult.mpiResult.successful) {
-            showResultBySource('mpi');
-            showDetails(0, 'mpi');
-            jq("html, body").animate({scrollTop: 0}, "slow");
-        } else if (source == 'mpi' && requestResult.mpiResult.successful) {
-            ui.navigate('kenyareg', 'merge', {
-                lpiUid: null,
-                mpiUid: null
-            });
+        if (source == 'lpi') {
+            lpiMatch = null;
+            if (requestResult.mpiResult.successful) {
+                showResultBySource('mpi');
+                showDetails(0, 'mpi');
+                jq("html, body").animate({scrollTop: 0}, "slow");
+            } else {
+                showFailure('mpi');
+            }
+        } else if (source == 'mpi') {
+            mpiMatch = null;
+            if (lpiMatch) {
+                ui.navigate('kenyareg', 'merge', {
+                    lpiUid: (lpiMatch && lpiMatch.personGuid),
+                    mpiUid: null
+                });
+            } else {
+                ui.navigate('kenyareg', 'merge', {
+                    lpiUid: null,
+                    mpiUid: null
+                });
+            }
         }
     });
 });

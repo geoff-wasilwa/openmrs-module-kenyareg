@@ -1,10 +1,9 @@
 package org.openmrs.module.kenyareg.api;
 
-import java.lang.reflect.Method;
-import java.util.*;
-
+import ke.go.moh.oec.Person;
+import ke.go.moh.oec.PersonIdentifier;
+import ke.go.moh.oec.PersonIdentifier.Type;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.openmrs.Location;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
@@ -17,11 +16,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-
-import ke.go.moh.oec.Person;
-import ke.go.moh.oec.PersonIdentifier;
-import ke.go.moh.oec.PersonIdentifier.Type;
 import org.springframework.util.CollectionUtils;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service("personMergeService")
 public class PersonMergeService {
@@ -106,6 +109,11 @@ public class PersonMergeService {
     public Map<String, Object> getLpiMpiMergedProperties(Person fromLpi, Person fromMpi) {
         if (fromLpi == null && fromMpi == null) {
             return Collections.emptyMap();
+        }
+        if (fromLpi == null && fromMpi != null) {
+            fromLpi = new Person();
+        } else if (fromLpi != null && fromMpi == null) {
+            fromMpi = new Person();
         }
         Map<String, Object> mergedProperties = new HashMap<String, Object>();
         for (String property : properties) {
@@ -204,32 +212,49 @@ public class PersonMergeService {
         return conflictingProperties;
     }
 
+
+    private PersonIdentifier getPersonIdentifier(List<PersonIdentifier> personIdentifiers, Type type) {
+        for (PersonIdentifier personIdentifier : personIdentifiers) {
+            if (personIdentifier.getIdentifierType().equals(type)) {
+                return personIdentifier;
+            }
+        }
+        return null;
+    }
+
     public Map<String, String> getLpiMpiMergedIdentifiers(Person fromLpi, Person fromMpi) {
         Map<String, String> lpiMpiMergedIdentifiers = new HashMap<String, String>();
-        if (fromLpi != null && fromMpi != null
-                && fromLpi.getPersonIdentifierList() != null
-                && fromMpi.getPersonIdentifierList() != null) {
-            if (!fromLpi.getPersonIdentifierList().isEmpty() && !fromMpi.getPersonIdentifierList().isEmpty()) {
-                for (PersonIdentifier lpiIdentifier : fromLpi.getPersonIdentifierList()) {
-                    for (PersonIdentifier mpiIdentifier : fromMpi.getPersonIdentifierList()) {
-                        if (lpiIdentifier.getIdentifierType().equals(mpiIdentifier.getIdentifierType())) {
-                            if (!mpiIdentifier.getIdentifierType().equals(Type.cccLocalId)
-                                    && !mpiIdentifier.getIdentifierType().equals(Type.cccUniqueId)) {
-                                lpiMpiMergedIdentifiers.put(mpiIdentifier.getIdentifierType().toString(), mpiIdentifier.getIdentifier());
-                            } else if (lpiIdentifier.getIdentifier().equalsIgnoreCase(mpiIdentifier.getIdentifier())) {
-                                lpiMpiMergedIdentifiers.put(lpiIdentifier.getIdentifierType().toString(), lpiIdentifier.getIdentifier());
-                            }
+
+        if (fromLpi != null && fromMpi != null) {
+            if (fromLpi.getPersonIdentifierList() != null && fromMpi.getPersonIdentifierList() != null) {
+                for (PersonIdentifier personIdFromLpi : fromLpi.getPersonIdentifierList()) {
+                    PersonIdentifier personIdFromMpi = (getPersonIdentifier(fromMpi.getPersonIdentifierList(), personIdFromLpi.getIdentifierType()));
+                    if (personIdFromMpi != null) {
+                        if (!personIdFromLpi.equals(personIdFromMpi)) {
+                            personIdFromMpi.setIdentifier(personIdFromLpi.getIdentifier());
                         }
+                    } else {
+                        personIdFromMpi = personIdFromLpi;
+                        fromMpi.getPersonIdentifierList().add(personIdFromMpi);
                     }
+                    lpiMpiMergedIdentifiers.put(personIdFromMpi.getIdentifierType().toString(), personIdFromMpi.getIdentifier());
+                }
+            } else if (fromLpi.getPersonIdentifierList() != null && fromMpi.getPersonIdentifierList() == null) {
+                for (PersonIdentifier personIdFromLpi : fromLpi.getPersonIdentifierList()) {
+                    lpiMpiMergedIdentifiers.put(personIdFromLpi.getIdentifierType().toString(), personIdFromLpi.getIdentifier());
+                }
+            } else if (fromLpi.getPersonIdentifierList() == null && fromMpi.getPersonIdentifierList() != null) {
+                for (PersonIdentifier personIdFromMpi : fromMpi.getPersonIdentifierList()) {
+                    lpiMpiMergedIdentifiers.put(personIdFromMpi.getIdentifierType().toString(), personIdFromMpi.getIdentifier());
                 }
             }
-        } else if (fromLpi != null && fromLpi.getPersonIdentifierList() != null && !fromLpi.getPersonIdentifierList().isEmpty()) {
-            for (PersonIdentifier lpiIdentifier : fromLpi.getPersonIdentifierList()) {
-                lpiMpiMergedIdentifiers.put(lpiIdentifier.getIdentifierType().toString(), lpiIdentifier.getIdentifier());
+        } else if (fromLpi != null && fromMpi == null) {
+            for (PersonIdentifier personIdFromLpi : fromLpi.getPersonIdentifierList()) {
+                lpiMpiMergedIdentifiers.put(personIdFromLpi.getIdentifierType().toString(), personIdFromLpi.getIdentifier());
             }
-        } else if (fromMpi != null && fromMpi.getPersonIdentifierList() != null && !fromMpi.getPersonIdentifierList().isEmpty()) {
-            for (PersonIdentifier mpiIdentifier : fromMpi.getPersonIdentifierList()) {
-                lpiMpiMergedIdentifiers.put(mpiIdentifier.getIdentifierType().toString(), mpiIdentifier.getIdentifier());
+        } else if (fromLpi == null && fromMpi != null) {
+            for (PersonIdentifier personIdFromMpi : fromMpi.getPersonIdentifierList()) {
+                lpiMpiMergedIdentifiers.put(personIdFromMpi.getIdentifierType().toString(), personIdFromMpi.getIdentifier());
             }
         }
         return lpiMpiMergedIdentifiers;
@@ -259,10 +284,6 @@ public class PersonMergeService {
                 }
             }
             return conflictingIdentifiers;
-
         }
-
-
     }
-
 }

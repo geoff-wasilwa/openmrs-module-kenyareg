@@ -36,12 +36,12 @@
                     label: "Parent Tel No"
             ],
             [
-                    value: "3",
-                    label: "Clinic No"
+                    value: "2",
+                    label: "UPN"
             ],
             [
-                    value: "3",
-                    label: "CCC UPN"
+                    value: "4",
+                    label: "Clinic ID"
             ],
             [
                     value: "50",

@@ -44,7 +44,16 @@
                 formatted = 'Clinic ID';
                 break;
             case 'kisumuHdssId':
+                formatted = 'Kisumu HDSS ID';
+                break;
+            case 'nupi':
                 formatted = 'NUPI';
+                break;
+            case 'telNo':
+                formatted = 'Tel No';
+                break;
+            case 'parentTelNo':
+                formatted = 'Parent Tel No';
                 break;
             default:
                 formatted = '';

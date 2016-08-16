@@ -101,7 +101,10 @@ public class OpenmrsPersonToOecPersonConverter {
         masterPatientRegistryId("Master Patient Registry ID"),
         cccUniqueId("Unique Patient Number"),
         cccLocalId("Patient Clinic Number"),
-        kisumuHdssId("Kisumu HDSS ID");
+        kisumuHdssId("Kisumu HDSS ID"),
+        nupi("NUPI"),
+        telNo("Telephone No"),
+        parentTelNo("Parent Telephone No");
 
         private final String typeString;
 

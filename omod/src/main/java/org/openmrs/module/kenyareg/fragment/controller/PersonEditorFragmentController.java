@@ -19,6 +19,7 @@ import org.openmrs.ui.framework.fragment.action.FailureResult;
 import org.openmrs.ui.framework.fragment.action.FragmentActionResult;
 import org.openmrs.ui.framework.fragment.action.ObjectResult;
 import org.openmrs.ui.framework.session.Session;
+
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -26,120 +27,119 @@ import java.util.Map;
 
 public class PersonEditorFragmentController {
 
-	public void controller(
-			@SpringBean("personMergeService") PersonMergeService mergeService,
-			FragmentConfiguration config,
-			FragmentModel model,
-			Session session
-		) {
-		Person fromLpi = new Person();
-		if (config.containsKey("lpiUid") && StringUtils.isNotBlank(config.get("lpiUid").toString())) {
-			String uuid = config.get("lpiUid").toString();
-			@SuppressWarnings("unchecked")
-			List<Person> lpiPersonList = (List<Person>) session.getAttribute("lpiResult", RequestResult.class).getData();
-			for (Person person : lpiPersonList) {
-				if (person.getPersonGuid().equals(uuid)) {
-					fromLpi = person;
-					break;
-				}
-			}
-		}
+    public void controller(
+            @SpringBean("personMergeService") PersonMergeService mergeService,
+            FragmentConfiguration config,
+            FragmentModel model,
+            Session session
+    ) {
+        Person fromLpi = null;
+        if (config.containsKey("lpiUid") && StringUtils.isNotBlank(config.get("lpiUid").toString())) {
+            String uuid = config.get("lpiUid").toString();
+            @SuppressWarnings("unchecked")
+            List<Person> lpiPersonList = (List<Person>) session.getAttribute("lpiResult", RequestResult.class).getData();
+            for (Person person : lpiPersonList) {
+                if (person.getPersonGuid().equals(uuid)) {
+                    fromLpi = person;
+                    break;
+                }
+            }
+        }
 
-		Person fromMpi = new Person();
-		if (config.containsKey("mpiUid") && StringUtils.isNotBlank(config.get("mpiUid").toString())) {
-			String uuid = config.get("mpiUid").toString();
-			@SuppressWarnings("unchecked")
-			List<Person> mpiPersonList = (List<Person>) session.getAttribute("mpiResult", RequestResult.class).getData();
-			for (Person person : mpiPersonList) {
-				if (person.getPersonGuid().equals(uuid)) {
-					fromMpi = person;
-					break;
-				}
-			}
-		}
-		session.setAttribute("lpiMatch", fromLpi);
-		session.setAttribute("mpiMatch", fromMpi);
-		model.addAttribute("lpiUid", fromLpi.getPersonGuid());
-		model.addAttribute("mpiUid", fromMpi.getPersonGuid());
-		model.addAttribute("mergedIdentifiers", mergeService.getLpiMpiMergedIdentifiers(fromLpi, fromMpi));
-		model.addAttribute("conflictingIdentifiers", mergeService.getConflictingIdentifiers(fromLpi, fromMpi));
-		model.addAttribute("mergedProperties", mergeService.getLpiMpiMergedProperties(fromLpi, fromMpi));
-		model.addAttribute("conflictedProperties", mergeService.getLpiMpiConflictingProperties(fromLpi, fromMpi));
+        Person fromMpi = null;
+        if (config.containsKey("mpiUid") && StringUtils.isNotBlank(config.get("mpiUid").toString())) {
+            String uuid = config.get("mpiUid").toString();
+            @SuppressWarnings("unchecked")
+            List<Person> mpiPersonList = (List<Person>) session.getAttribute("mpiResult", RequestResult.class).getData();
+            for (Person person : mpiPersonList) {
+                if (person.getPersonGuid().equals(uuid)) {
+                    fromMpi = person;
+                    break;
+                }
+            }
+        }
+        session.setAttribute("lpiMatch", fromLpi);
+        session.setAttribute("mpiMatch", fromMpi);
+        model.addAttribute("lpiUid", fromLpi != null ? fromLpi.getPersonGuid() : "");
+        model.addAttribute("mpiUid", fromMpi != null ? fromMpi.getPersonGuid() : null);
+        model.addAttribute("mergedIdentifiers", mergeService.getLpiMpiMergedIdentifiers(fromLpi, fromMpi));
+        model.addAttribute("conflictingIdentifiers", mergeService.getConflictingIdentifiers(fromLpi, fromMpi));
+        model.addAttribute("mergedProperties", mergeService.getLpiMpiMergedProperties(fromLpi, fromMpi));
+        model.addAttribute("conflictedProperties", mergeService.getLpiMpiConflictingProperties(fromLpi, fromMpi));
 
     }
-	public FragmentActionResult update(
-			@SpringBean("personMergeService") PersonMergeService mergeService,
-			@SpringBean("registryService") RegistryService registryService,
-			@BindParams Person person, FragmentActionRequest request,
-			Session session, UiUtils ui) {
-		Person lpiMatch = session.getAttribute("lpiMatch", Person.class);
-		Person mpiMatch = session.getAttribute("mpiMatch", Person.class);
-		validateConflictingPersonProperty(mergeService, request, lpiMatch, mpiMatch);
-		validateConflictingPersonIdentifiers(mergeService, request, lpiMatch, mpiMatch);
 
-		if (request.hasErrors()) {
-			return new FailureResult(request.getErrors());
-		}
-		
-		List<PersonIdentifier> personIdentifiers = getPersonIdentifiers(request);
-		person.setPersonIdentifierList(personIdentifiers);
-		boolean lpiMatched = (lpiMatch != null);
-		boolean mpiMatched = (mpiMatch != null);
-		Patient patient = registryService.acceptPerson(person,lpiMatched,mpiMatched);
-		return new ObjectResult(SimpleObject.create("patientId", patient.getId()));
-	}
+    public FragmentActionResult update(
+            @SpringBean("personMergeService") PersonMergeService mergeService,
+            @SpringBean("registryService") RegistryService registryService,
+            @BindParams Person person, FragmentActionRequest request,
+            Session session, UiUtils ui) {
+        Person lpiMatch = session.getAttribute("lpiMatch", Person.class);
+        Person mpiMatch = session.getAttribute("mpiMatch", Person.class);
+        validateConflictingPersonProperty(mergeService, request, lpiMatch, mpiMatch);
+        validateConflictingPersonIdentifiers(mergeService, request, lpiMatch, mpiMatch);
 
-	private List<PersonIdentifier> getPersonIdentifiers(FragmentActionRequest request) {
-		List<PersonIdentifier> personIdentifiers = new ArrayList<PersonIdentifier>();
-		Enumeration keys = request.getHttpRequest().getParameterNames();
-		while (keys.hasMoreElements()) {
-			String key = (String)keys.nextElement();
-			if (StringUtils.contains(key, "identifier") && !StringUtils.contains(key, "conflict")) {
-				String identifierType = StringUtils.remove(key, "identifier_");
-				String identifierValue = request.getParameter(key);
-				if (StringUtils.isNotBlank(identifierValue)) {
-					PersonIdentifier personIdentifier = new PersonIdentifier();
-					personIdentifier.setIdentifierType(Type.valueOf(identifierType));
-					personIdentifier.setIdentifier(identifierValue);
-					personIdentifiers.add(personIdentifier);
-				}
-			}
-		}
-		return personIdentifiers;
-	}
+        if (request.hasErrors()) {
+            return new FailureResult(request.getErrors());
+        }
 
-	private void validateConflictingPersonIdentifiers(PersonMergeService mergeService, FragmentActionRequest request,
-			Person lpiMatch, Person mpiMatch) {
-		Map<String, Map<String, String>> conflictingIdentifiers = mergeService.getConflictingIdentifiers(lpiMatch, mpiMatch);
-		for (Map.Entry<String, Map<String, String>> conflictingPairEntry : conflictingIdentifiers.entrySet()) {
-			String identifierType = conflictingPairEntry.getKey();
-			boolean found = true;
-			for (Map.Entry<String, String> conflictingPair : conflictingPairEntry.getValue().entrySet()) {
-				String requestParameterName = "conflict-" + conflictingPair.getKey() + "-identifier_" + identifierType;
-				String value = request.getParameter(requestParameterName);
-				found = found && (value != null);
-			}
-			if (found) {
-				request.globalError("Please resolve " + identifierType + " conflict");
-			}
-		}
-	}
+        List<PersonIdentifier> personIdentifiers = getPersonIdentifiers(request);
+        person.setPersonIdentifierList(personIdentifiers);
+        Patient patient = registryService.acceptPerson(person, lpiMatch, mpiMatch);
+        return new ObjectResult(SimpleObject.create("patientId", patient.getId()));
+    }
 
-	private void validateConflictingPersonProperty(PersonMergeService mergeService, FragmentActionRequest request,
-			Person lpiMatch, Person mpiMatch) {
-		Map<String, Map<String, Object>> conflictingProperties = mergeService.getLpiMpiConflictingProperties(lpiMatch, mpiMatch);
-		for (Map.Entry<String, Map<String, Object>> entry : conflictingProperties.entrySet()) {
-			String propertyName = entry.getKey();
-			boolean found = true;
-			for (Map.Entry<String, Object> valueEntry : entry.getValue().entrySet()) {
-				String requestParameterName = "conflict-" + valueEntry.getKey() + "-" + propertyName;
-				Object value = request.getAttribute(requestParameterName);
-				found = found && (value != null);
-			}
-			if (found) {
-				request.globalError("Please resolve " + propertyName + " conflict");
-			}
-		}
-	}
+    private List<PersonIdentifier> getPersonIdentifiers(FragmentActionRequest request) {
+        List<PersonIdentifier> personIdentifiers = new ArrayList<PersonIdentifier>();
+        Enumeration keys = request.getHttpRequest().getParameterNames();
+        while (keys.hasMoreElements()) {
+            String key = (String) keys.nextElement();
+            if (StringUtils.contains(key, "identifier") && !StringUtils.contains(key, "conflict")) {
+                String identifierType = StringUtils.remove(key, "identifier_");
+                String identifierValue = request.getParameter(key);
+                if (StringUtils.isNotBlank(identifierValue)) {
+                    PersonIdentifier personIdentifier = new PersonIdentifier();
+                    personIdentifier.setIdentifierType(Type.valueOf(identifierType));
+                    personIdentifier.setIdentifier(identifierValue);
+                    personIdentifiers.add(personIdentifier);
+                }
+            }
+        }
+        return personIdentifiers;
+    }
+
+    private void validateConflictingPersonIdentifiers(PersonMergeService mergeService, FragmentActionRequest request,
+                                                      Person lpiMatch, Person mpiMatch) {
+        Map<String, Map<String, String>> conflictingIdentifiers = mergeService.getConflictingIdentifiers(lpiMatch, mpiMatch);
+        for (Map.Entry<String, Map<String, String>> conflictingPairEntry : conflictingIdentifiers.entrySet()) {
+            String identifierType = conflictingPairEntry.getKey();
+            boolean found = true;
+            for (Map.Entry<String, String> conflictingPair : conflictingPairEntry.getValue().entrySet()) {
+                String requestParameterName = "conflict-" + conflictingPair.getKey() + "-identifier_" + identifierType;
+                String value = request.getParameter(requestParameterName);
+                found = found && (value != null);
+            }
+            if (found) {
+                request.globalError("Please resolve " + identifierType + " conflict");
+            }
+        }
+    }
+
+    private void validateConflictingPersonProperty(PersonMergeService mergeService, FragmentActionRequest request,
+                                                   Person lpiMatch, Person mpiMatch) {
+        Map<String, Map<String, Object>> conflictingProperties = mergeService.getLpiMpiConflictingProperties(lpiMatch, mpiMatch);
+        for (Map.Entry<String, Map<String, Object>> entry : conflictingProperties.entrySet()) {
+            String propertyName = entry.getKey();
+            boolean found = true;
+            for (Map.Entry<String, Object> valueEntry : entry.getValue().entrySet()) {
+                String requestParameterName = "conflict-" + valueEntry.getKey() + "-" + propertyName;
+                Object value = request.getAttribute(requestParameterName);
+                found = found && (value != null);
+            }
+            if (found) {
+                request.globalError("Please resolve " + propertyName + " conflict");
+            }
+        }
+    }
 }
 
