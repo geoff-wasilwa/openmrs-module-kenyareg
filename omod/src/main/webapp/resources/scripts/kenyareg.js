@@ -52,23 +52,26 @@ jq(function () {
      */
     kenyaui.setupAjaxPost('search-form', {
         onSuccess: function (data) {
-            kenyaui.closeDialog();
+            console.dir(data.lpiResult.data);
             requestResult = data;
             if (!lpiMatch) {
-                if (data.lpiResult.successful) {
+                if (data.lpiResult.successful && data.lpiResult.data.length > 0) {
                     showResultBySource('lpi');
                     showDetails(0, 'lpi');
                 } else {
                     showFailure('lpi');
                 }
             } else if (!mpiMatch) {
-                if (data.mpiResult.successful) {
+                if (data.mpiResult.successful && data.mpiResult.data.length > 0) {
                     showResultBySource('mpi');
                     showDetails(0, 'mpi');
                 } else {
                     showFailure('mpi');
                 }
             }
+        },
+        always: function () {
+            kenyaui.closeDialog();
         }
     });
 

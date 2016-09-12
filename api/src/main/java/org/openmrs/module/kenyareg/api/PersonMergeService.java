@@ -249,12 +249,16 @@ public class PersonMergeService {
                 }
             }
         } else if (fromLpi != null && fromMpi == null) {
-            for (PersonIdentifier personIdFromLpi : fromLpi.getPersonIdentifierList()) {
-                lpiMpiMergedIdentifiers.put(personIdFromLpi.getIdentifierType().toString(), personIdFromLpi.getIdentifier());
+            if (fromLpi.getPersonIdentifierList() != null) {
+                for (PersonIdentifier personIdFromLpi : fromLpi.getPersonIdentifierList()) {
+                    lpiMpiMergedIdentifiers.put(personIdFromLpi.getIdentifierType().toString(), personIdFromLpi.getIdentifier());
+                }
             }
         } else if (fromLpi == null && fromMpi != null) {
-            for (PersonIdentifier personIdFromMpi : fromMpi.getPersonIdentifierList()) {
-                lpiMpiMergedIdentifiers.put(personIdFromMpi.getIdentifierType().toString(), personIdFromMpi.getIdentifier());
+            if (fromMpi.getPersonIdentifierList() != null) {
+                for (PersonIdentifier personIdFromMpi : fromMpi.getPersonIdentifierList()) {
+                    lpiMpiMergedIdentifiers.put(personIdFromMpi.getIdentifierType().toString(), personIdFromMpi.getIdentifier());
+                }
             }
         }
         return lpiMpiMergedIdentifiers;

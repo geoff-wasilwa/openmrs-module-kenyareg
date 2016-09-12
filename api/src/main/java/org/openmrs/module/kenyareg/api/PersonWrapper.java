@@ -4,7 +4,8 @@ import ke.go.moh.oec.Fingerprint;
 import ke.go.moh.oec.Person;
 import ke.go.moh.oec.PersonIdentifier;
 import ke.go.moh.oec.Visit;
-import org.openmrs.module.kenyareg.api.exceptions.MalformedCliniIdException;
+
+import org.openmrs.module.kenyareg.api.exceptions.MalformedClinicIdException;
 import org.openmrs.module.kenyareg.api.utils.RegistryHelper;
 
 import java.util.ArrayList;
@@ -63,10 +64,10 @@ public class PersonWrapper {
         return personIdentifierList;
     }
 
-    public void setClinicId(String clinicId) throws MalformedCliniIdException {
+    public void setClinicId(String clinicId) throws MalformedClinicIdException {
         PersonIdentifier personIdentifier = RegistryHelper.createPersonIdentifier(clinicId);
         if (personIdentifier == null) {
-            throw new MalformedCliniIdException();
+            throw new MalformedClinicIdException();
         }
         List<PersonIdentifier> personIdentifierList = preparedPersonIdentifierList(personIdentifier);
         if (!personIdentifierList.contains(personIdentifier)) {

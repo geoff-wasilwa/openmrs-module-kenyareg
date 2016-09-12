@@ -140,23 +140,14 @@ public class PersonMergeServiceTest {
 		Assert.assertThat(mergedIdentifiers.size(), Matchers.is(1));
 	}
 
-	@Test public void getLpiMpiMergedIdentifiers_shouldReturnEmptyIfIdentifiersDontMatch() throws ParseException {
+	@Test public void getLpiMpiMergedIdentifiers_shouldPrefereLpiIdIfIdentifiersDontMatch() throws ParseException {
 		Person lpiPerson = getMpiPerson("1-1-1-1", Type.cccLocalId);
 		Person mpiPerson = getMpiPerson("1-1-1-2", Type.cccLocalId);
 		
 		Map<String, String> mergedIdentifiers = mergeService.getLpiMpiMergedIdentifiers(lpiPerson, mpiPerson);
 		
-		Assert.assertThat(mergedIdentifiers.size(), Matchers.is(0));
-	}
-	
-	@Test public void getLpiMpiMergedIdentifiers_shouldPreferMpiIdentifierIfNotCCCLocalOrUniqueId() throws ParseException {
-		Person lpiPerson = getMpiPerson("1-1-1-1", Type.patientRegistryId);
-		Person mpiPerson = getMpiPerson("1-1-1-2", Type.patientRegistryId);
-		
-		Map<String, String> mergedIdentifiers = mergeService.getLpiMpiMergedIdentifiers(lpiPerson, mpiPerson);
-		
 		Assert.assertThat(mergedIdentifiers.size(), Matchers.is(1));
-		Assert.assertThat(mergedIdentifiers.get(Type.patientRegistryId.toString()), Matchers.equalTo("1-1-1-2"));
+		Assert.assertThat(mergedIdentifiers.get(Type.cccLocalId.toString()), Matchers.equalTo("1-1-1-1"));
 	}
 	
 	@Test public void getLpiMpiMergedIdentifiers_shouldPreferNonEmptyIdentifiers() throws ParseException {
