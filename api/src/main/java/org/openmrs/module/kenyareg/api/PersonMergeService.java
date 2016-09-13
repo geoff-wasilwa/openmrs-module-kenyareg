@@ -36,11 +36,11 @@ public class PersonMergeService {
     PatientService patientService;
     private final String[] properties = new String[]
             {
-                    "lastName", "firstName", "middleName", "otherName",
-                    "clanName", "sex", "birthdate", "mothersFirstName",
-                    "mothersMiddleName", "mothersLastName", "fathersFirstName",
-                    "fathersMiddleName", "fathersLastName",
-                    "villageName", "maritalStatus"
+                "lastName", "firstName", "middleName", "otherName",
+                "clanName", "sex", "birthdate", "mothersFirstName",
+                "mothersMiddleName", "mothersLastName", "fathersFirstName",
+                "fathersMiddleName", "fathersLastName",
+                "villageName", "maritalStatus"
             };
 
     public void mergePatientIdentifiers(Patient patient, List<PersonIdentifier> identifiers, Location location) {
@@ -189,7 +189,6 @@ public class PersonMergeService {
                     }
                 } else if (lpiValue instanceof Date || mpiValue instanceof Date) {
                     Date mpiDate = (Date) lpiValue;
-                    ;
                     Date lpiDate = (Date) mpiValue;
                     if (lpiDate.compareTo(mpiDate) != 0) {
                         Map<String, Object> conflictingProperty = new HashMap<String, Object>();
@@ -228,16 +227,14 @@ public class PersonMergeService {
         if (fromLpi != null && fromMpi != null) {
             if (fromLpi.getPersonIdentifierList() != null && fromMpi.getPersonIdentifierList() != null) {
                 for (PersonIdentifier personIdFromLpi : fromLpi.getPersonIdentifierList()) {
-                    PersonIdentifier personIdFromMpi = (getPersonIdentifier(fromMpi.getPersonIdentifierList(), personIdFromLpi.getIdentifierType()));
+                    PersonIdentifier personIdFromMpi = getPersonIdentifier(fromMpi.getPersonIdentifierList(), personIdFromLpi.getIdentifierType());
                     if (personIdFromMpi != null) {
-                        if (!personIdFromLpi.equals(personIdFromMpi)) {
-                            personIdFromMpi.setIdentifier(personIdFromLpi.getIdentifier());
+                        if (personIdFromLpi.equals(personIdFromMpi)) {
+                            lpiMpiMergedIdentifiers.put(personIdFromMpi.getIdentifierType().toString(), personIdFromMpi.getIdentifier());
+                        } else if (personIdFromLpi.getIdentifierType() == Type.nupi) {
+                            lpiMpiMergedIdentifiers.put(personIdFromMpi.getIdentifierType().toString(), personIdFromMpi.getIdentifier());
                         }
-                    } else {
-                        personIdFromMpi = personIdFromLpi;
-                        fromMpi.getPersonIdentifierList().add(personIdFromMpi);
                     }
-                    lpiMpiMergedIdentifiers.put(personIdFromMpi.getIdentifierType().toString(), personIdFromMpi.getIdentifier());
                 }
             } else if (fromLpi.getPersonIdentifierList() != null && fromMpi.getPersonIdentifierList() == null) {
                 for (PersonIdentifier personIdFromLpi : fromLpi.getPersonIdentifierList()) {
@@ -273,8 +270,7 @@ public class PersonMergeService {
         } else {
             Map<String, Map<String, String>> conflictingIdentifiers = new HashMap<String, Map<String, String>>();
             for (PersonIdentifier lpiIdentifier : fromLpi.getPersonIdentifierList()) {
-                if (!lpiIdentifier.getIdentifierType().equals(Type.cccLocalId)
-                        && !lpiIdentifier.getIdentifierType().equals(Type.cccUniqueId)) {
+                if (lpiIdentifier.getIdentifierType().equals(Type.nupi)) {
                     continue;
                 }
                 for (PersonIdentifier mpiIdentifier : fromMpi.getPersonIdentifierList()) {
