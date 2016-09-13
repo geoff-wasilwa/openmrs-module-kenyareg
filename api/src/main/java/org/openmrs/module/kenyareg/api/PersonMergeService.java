@@ -47,6 +47,10 @@ public class PersonMergeService {
         assert patient != null;
         assert identifiers != null;
         for (PersonIdentifier identifier : identifiers) {
+            if (identifier.getIdentifierType().equals(Type.nupi)) {
+                patient.setUuid(identifier.getIdentifier());
+                continue;
+            }
             String typeName = identifier.getIdentifierType().name();
             OpenmrsPersonToOecPersonConverter.OpenmrsIdentifierTypeConverter openmrsIdentifierTypeConverter =
                     OpenmrsPersonToOecPersonConverter.OpenmrsIdentifierTypeConverter.valueOf(typeName);

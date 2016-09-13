@@ -72,6 +72,17 @@ public class PersonMergeServiceTest {
 		Assert.assertThat(omrsPatient.getIdentifiers(), Matchers.hasItem(Matchers.<PatientIdentifier>hasProperty("identifier", Matchers.equalToIgnoringCase("ID 2"))));
 	}
 
+	@Test public void mergePatientIdentifiers_shouldUpdateOmrsPersonUuidWithMpiNupiIdentifier() throws ParseException {
+		PatientIdentifierType identifierType = getCccLocalIdentifier();
+		Mockito.when(patientServiceMock.getPatientIdentifierTypeByName(Mockito.contains("TYPE 1"))).thenReturn(identifierType);
+		Patient omrsPatient = new Patient();
+		Person mpiPerson = getMpiPerson("NUPI-ID", Type.nupi);
+		
+		mergeService.mergePatientIdentifiers(omrsPatient, mpiPerson.getPersonIdentifierList(), null);
+		
+		Assert.assertThat(omrsPatient.getUuid(), Matchers.equalTo("NUPI-ID"));
+	}
+
 	@Test public void mergePerson_shouldCreateOmrsPersonWithMpiPersonDetails() throws ParseException {
 		Person mpiPerson = getMpiPerson("NEWID", Type.cccLocalId);
 
