@@ -14,11 +14,6 @@ jq(function () {
     showEmpty();
 
     /**
-     * Hide details panel
-     */
-    jq(".detail").hide();
-
-    /**
      * The search result after sending a query to the MPI, LPI or both.
      */
     var requestResult = null;
@@ -52,19 +47,16 @@ jq(function () {
      */
     kenyaui.setupAjaxPost('search-form', {
         onSuccess: function (data) {
-            console.dir(data.lpiResult.data);
             requestResult = data;
             if (!lpiMatch) {
-                if (data.lpiResult.successful && data.lpiResult.data.length > 0) {
+                if (data.lpiResult.successful) {
                     showResultBySource('lpi');
-                    showDetails(0, 'lpi');
                 } else {
                     showFailure('lpi');
                 }
             } else if (!mpiMatch) {
-                if (data.mpiResult.successful && data.mpiResult.data.length > 0) {
+                if (data.mpiResult.successful) {
                     showResultBySource('mpi');
-                    showDetails(0, 'mpi');
                 } else {
                     showFailure('mpi');
                 }
@@ -108,6 +100,7 @@ jq(function () {
             for (var i = 0; i < list.data.length; i++) {
                 showPerson(i, src);
             }
+            showDetails(0, src);
         }
     }
 
@@ -134,6 +127,9 @@ jq(function () {
             '<tr>' +
             '<td colspan="6" style="text-align:center;">No results</td>' +
             '</tr>');
+        jq(".detail").hide();
+        //Change button label to read 'Continue'
+        jq("#reject-button").html("Continue");
     }
 
     function showPerson(i, source) {
@@ -167,6 +163,7 @@ jq(function () {
             mpiMatch = requestResult.mpiResult.data[i];
             selected = mpiMatch;
         }
+        jq(".continue").hide();
         jq(".detail").show('slow');
         showMatchScore(selected)
         showIdentifierDetails(selected);
@@ -326,11 +323,9 @@ jq(function () {
     }
 
     jq('#accept-button').click(function () {
-
         if (source == 'lpi') {
             if (!mpiMatch) {
                 showResultBySource('mpi');
-                showDetails(0, 'mpi');
                 jq("html, body").animate({scrollTop: 0}, "slow");
             } else {
                 ui.navigate('kenyareg', 'merge', {
@@ -354,7 +349,6 @@ jq(function () {
             lpiMatch = null;
             if (requestResult.mpiResult.successful) {
                 showResultBySource('mpi');
-                showDetails(0, 'mpi');
                 jq("html, body").animate({scrollTop: 0}, "slow");
             } else {
                 showFailure('mpi');
@@ -363,7 +357,7 @@ jq(function () {
             mpiMatch = null;
             if (lpiMatch) {
                 ui.navigate('kenyareg', 'merge', {
-                    lpiUid: (lpiMatch && lpiMatch.personGuid),
+                    lpiUid: lpiMatch.personGuid,
                     mpiUid: null
                 });
             } else {
