@@ -62,7 +62,8 @@
     }
 
     def clinicIdentifier = [ formFieldName: "identifier_cccLocalId", label : "Clinic ID", class : java.lang.String, id : "identifiers.cccLocalId" ]
-
+    def phoneNumber = [ formFieldName: "identifier_telNo", label : "Phone Number", class : java.lang.String, id : "identifiers.cccLocalId" ]
+    def parentPhoneNumber = [ formFieldName: "identifier_parentTelNo", label : "Parent Phone Number", class : java.lang.String, id : "identifiers.cccLocalId" ]
     def uniquePersonNumber = [ formFieldName: "identifier_cccUniqueId", label : "UPN", class : java.lang.String, id : "identifiers.cccUniqueId" ]
 
     def nameFieldDefinitions = [
@@ -164,6 +165,12 @@
             <% } %>
             <% if (!mergedIdentifiers.cccUniqueId && !conflictingIdentifiers.cccUniqueId) { %>
                 ${ui.includeFragment("kenyaui", "widget/labeledField", uniquePersonNumber)}
+            <% } %>
+            <% if (!mergedIdentifiers.telNo && !conflictingIdentifiers.telNo) { %>
+                ${ui.includeFragment("kenyaui", "widget/labeledField", phoneNumber)}
+            <% } %>
+            <% if (!mergedIdentifiers.parentTelNo && !conflictingIdentifiers.parentTelNo) { %>
+                ${ui.includeFragment("kenyaui", "widget/labeledField", parentPhoneNumber)}
             <% } %>
             <% mergedIdentifiers.each { idType, id -> 
                 def label = getFormattedIdentifierType(idType) %>

@@ -72,6 +72,17 @@ public class PersonMergeServiceTest {
 		Assert.assertThat(omrsPatient.getIdentifiers(), Matchers.hasItem(Matchers.<PatientIdentifier>hasProperty("identifier", Matchers.equalToIgnoringCase("ID 2"))));
 	}
 
+	@Test public void mergePatientIdentifiers_shouldUpdateOmrsPersonUuidWithMpiNupiIdentifier() throws ParseException {
+		PatientIdentifierType identifierType = getCccLocalIdentifier();
+		Mockito.when(patientServiceMock.getPatientIdentifierTypeByName(Mockito.contains("TYPE 1"))).thenReturn(identifierType);
+		Patient omrsPatient = new Patient();
+		Person mpiPerson = getMpiPerson("NUPI-ID", Type.nupi);
+		
+		mergeService.mergePatientIdentifiers(omrsPatient, mpiPerson.getPersonIdentifierList(), null);
+		
+		Assert.assertThat(omrsPatient.getUuid(), Matchers.equalTo("NUPI-ID"));
+	}
+
 	@Test public void mergePerson_shouldCreateOmrsPersonWithMpiPersonDetails() throws ParseException {
 		Person mpiPerson = getMpiPerson("NEWID", Type.cccLocalId);
 
@@ -140,23 +151,23 @@ public class PersonMergeServiceTest {
 		Assert.assertThat(mergedIdentifiers.size(), Matchers.is(1));
 	}
 
-	@Test public void getLpiMpiMergedIdentifiers_shouldReturnEmptyIfIdentifiersDontMatch() throws ParseException {
+	@Test public void getLpiMpiMergedIdentifiers_shouldPreferMpiIdIfIdentifierTypeIsNupi() throws ParseException {
+		Person lpiPerson = getMpiPerson("1-1-1-1", Type.nupi);
+		Person mpiPerson = getMpiPerson("1-1-1-2", Type.nupi);
+		
+		Map<String, String> mergedIdentifiers = mergeService.getLpiMpiMergedIdentifiers(lpiPerson, mpiPerson);
+		
+		Assert.assertThat(mergedIdentifiers.size(), Matchers.is(1));
+		Assert.assertThat(mergedIdentifiers.get(Type.nupi.toString()), Matchers.equalTo("1-1-1-2"));
+	}
+
+	@Test public void getLpiMpiMergedIdentifiers_shouldReturnEmptyIfIdentifiersInConflict() throws ParseException {
 		Person lpiPerson = getMpiPerson("1-1-1-1", Type.cccLocalId);
 		Person mpiPerson = getMpiPerson("1-1-1-2", Type.cccLocalId);
 		
 		Map<String, String> mergedIdentifiers = mergeService.getLpiMpiMergedIdentifiers(lpiPerson, mpiPerson);
 		
 		Assert.assertThat(mergedIdentifiers.size(), Matchers.is(0));
-	}
-	
-	@Test public void getLpiMpiMergedIdentifiers_shouldPreferMpiIdentifierIfNotCCCLocalOrUniqueId() throws ParseException {
-		Person lpiPerson = getMpiPerson("1-1-1-1", Type.patientRegistryId);
-		Person mpiPerson = getMpiPerson("1-1-1-2", Type.patientRegistryId);
-		
-		Map<String, String> mergedIdentifiers = mergeService.getLpiMpiMergedIdentifiers(lpiPerson, mpiPerson);
-		
-		Assert.assertThat(mergedIdentifiers.size(), Matchers.is(1));
-		Assert.assertThat(mergedIdentifiers.get(Type.patientRegistryId.toString()), Matchers.equalTo("1-1-1-2"));
 	}
 	
 	@Test public void getLpiMpiMergedIdentifiers_shouldPreferNonEmptyIdentifiers() throws ParseException {
