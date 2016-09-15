@@ -235,7 +235,7 @@ public class PersonMergeService {
                     if (personIdFromMpi != null) {
                         if (personIdFromLpi.equals(personIdFromMpi)) {
                             lpiMpiMergedIdentifiers.put(personIdFromMpi.getIdentifierType().toString(), personIdFromMpi.getIdentifier());
-                        } else if (personIdFromLpi.getIdentifierType() == Type.nupi) {
+                        } else if (personIdFromLpi.getIdentifierType().equals(Type.nupi) || personIdFromLpi.getIdentifierType().equals(Type.masterPatientRegistryId)) {
                             lpiMpiMergedIdentifiers.put(personIdFromMpi.getIdentifierType().toString(), personIdFromMpi.getIdentifier());
                         }
                     }
@@ -274,12 +274,12 @@ public class PersonMergeService {
         } else {
             Map<String, Map<String, String>> conflictingIdentifiers = new HashMap<String, Map<String, String>>();
             for (PersonIdentifier lpiIdentifier : fromLpi.getPersonIdentifierList()) {
-                if (lpiIdentifier.getIdentifierType().equals(Type.nupi)) {
+                if (lpiIdentifier.getIdentifierType().equals(Type.nupi) || lpiIdentifier.getIdentifierType().equals(Type.masterPatientRegistryId)) {
                     continue;
                 }
                 for (PersonIdentifier mpiIdentifier : fromMpi.getPersonIdentifierList()) {
                     if (lpiIdentifier.getIdentifierType().equals(mpiIdentifier.getIdentifierType())
-                            && lpiIdentifier.getIdentifier() != mpiIdentifier.getIdentifier()) {
+                            && !lpiIdentifier.getIdentifier().equalsIgnoreCase(mpiIdentifier.getIdentifier())) {
                         Map<String, String> conflictingIdentifierPair = new HashMap<String, String>();
                         conflictingIdentifierPair.put("lpi", lpiIdentifier.getIdentifier());
                         conflictingIdentifierPair.put("mpi", mpiIdentifier.getIdentifier());

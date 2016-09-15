@@ -151,6 +151,31 @@ public class PersonMergeServiceTest {
 		Assert.assertThat(mergedIdentifiers.size(), Matchers.is(1));
 	}
 
+	@Test public void getConflictingIdentifiers_shouldReturnEmptyCollectionIfIdentifiersMatch() throws ParseException {
+		Person lpiPerson = getMpiPerson("1-1-1-1", Type.cccLocalId);
+		Person mpiPerson = getMpiPerson("1-1-1-1", Type.cccLocalId);
+		
+		Map<String, Map<String,String>> mergedIdentifiers = mergeService.getConflictingIdentifiers(lpiPerson, mpiPerson);
+		
+		Assert.assertThat(mergedIdentifiers.size(), Matchers.is(0));
+	}
+
+	@Test public void getConflictingIdentifiers_shouldNotConflictWhenIdentifierAreOfTypeMpiOrNupi() throws ParseException {
+		Person lpiPerson = getMpiPerson("1-1-1-1", Type.nupi);
+		Person mpiPerson = getMpiPerson("1-1-1-2", Type.nupi);
+		
+		Map<String, Map<String,String>> mergedIdentifiers = mergeService.getConflictingIdentifiers(lpiPerson, mpiPerson);
+		
+		Assert.assertThat(mergedIdentifiers.size(), Matchers.is(0));
+		
+		lpiPerson = getMpiPerson("1-1-1-1", Type.masterPatientRegistryId);
+		mpiPerson = getMpiPerson("1-1-1-2", Type.masterPatientRegistryId);
+		
+		mergedIdentifiers = mergeService.getConflictingIdentifiers(lpiPerson, mpiPerson);
+		
+		Assert.assertThat(mergedIdentifiers.size(), Matchers.is(0));
+	}
+
 	@Test public void getLpiMpiMergedIdentifiers_shouldPreferMpiIdIfIdentifierTypeIsNupi() throws ParseException {
 		Person lpiPerson = getMpiPerson("1-1-1-1", Type.nupi);
 		Person mpiPerson = getMpiPerson("1-1-1-2", Type.nupi);
