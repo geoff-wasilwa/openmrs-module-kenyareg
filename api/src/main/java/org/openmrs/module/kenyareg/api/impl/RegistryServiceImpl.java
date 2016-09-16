@@ -107,6 +107,18 @@ public class RegistryServiceImpl extends BaseOpenmrsService implements RegistryS
     }
 
     private void copyPropertiesFromUiToIndex(Person fromUi, Person fromIndex) {
+        if (fromUi.getFirstName() != null) {
+            fromIndex.setFirstName(fromUi.getFirstName());
+        }
+        if (fromUi.getLastName() != null) {
+            fromIndex.setLastName(fromUi.getLastName());
+        }
+        if (fromUi.getMiddleName() != null) {
+            fromIndex.setMiddleName(fromUi.getMiddleName());
+        }
+        if (fromUi.getOtherName() != null) {
+            fromIndex.setOtherName(fromUi.getOtherName());
+        }
         if (fromUi.getMaritalStatus() != null) {
             fromIndex.setMaritalStatus(fromUi.getMaritalStatus());
         }
